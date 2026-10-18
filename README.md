@@ -4,6 +4,10 @@ MVP для поиска по документам и исходному коду
 и подготовки предложений по доработке проектов. Модели работают в LM Studio,
 интерфейс общения — Open WebUI, права доступа проверяет сервер AgentAI.
 
+Установка и сборка интерфейса из папки `frontend` описаны в
+[инструкции Open WebUI](docs/frontend-webui.md): Docker, подключение к AgentAI,
+загрузки при первой сборке, обновление и режим разработки.
+
 ## Пилот: память, качество поиска и библиотека на PostgreSQL
 
 Откройте <http://localhost:8000/library>. Страница позволяет вести сохраняемые
@@ -249,7 +253,7 @@ curl.exe http://localhost:1234/v1/models
 
 ```powershell
 docker compose up -d --build qdrant api
-docker compose up -d webui
+docker compose up -d --build webui
 ```
 
 - Интерфейс: <http://localhost:3000>.
