@@ -1,0 +1,65 @@
+# Рабочие секреты и локальные настройки; шаблон сохраняем.
+.env
+.env.*
+!.env.example
+.envrc
+*.local
+
+# Документы организации, локальные данные и временные материалы.
+/data/
+/work/
+/outputs/
+/backups/
+/upload.json
+
+# Виртуальные среды и локально установленные зависимости.
+.venv/
+venv/
+env/
+.test-deps/
+.dev-deps/
+node_modules/
+
+# Кеши Python, тестов, анализа и менеджеров пакетов.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.uv-cache/
+.cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Сборка и упаковка; lock-файлы не исключаются.
+build/
+dist/
+.build-temp/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Журналы и временные копии редакторов.
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# Локальные файлы IDE и операционной системы.
+.idea/
+.vs/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+Desktop.ini
+VERIFIED.md
+examples/demo.md

@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:17.11-bookworm
+    environment:
+      POSTGRES_DB: agentai
+      POSTGRES_USER: agentai
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set a PostgreSQL password}"
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentai -d agentai"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  qdrant:
+    image: qdrant/qdrant:v1.16.2
+    volumes: ["qdrant:/qdrant/storage"]
+  api:
+    build: .
+    env_file: .env
+    volumes: ["documents:/app/data"]
+    environment:
+      DOCUMENTS_DIR: /app/data/documents
+      DATABASE_URL: "postgresql://agentai:${POSTGRES_PASSWORD:?Set a PostgreSQL password}@postgres:5432/agentai"
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      qdrant:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    restart: unless-stopped
+  webui:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: open-webui:local
+    ports: ["127.0.0.1:3000:8080"]
+    volumes: ["webui:/app/backend/data"]
+    environment:
+      ENABLE_OLLAMA_API: "false"
+      ENABLE_FORWARD_USER_INFO_HEADERS: "true"
+      OPENAI_API_BASE_URL: http://api:8000/v1
+      OPENAI_API_KEY: "${WEBUI_READER_KEY:?Set a dedicated reader key}"
+      WEBUI_SECRET_KEY: "${WEBUI_SECRET_KEY:?Set a random secret}"
+      WEBUI_AUTH: "true"
+      ENABLE_SIGNUP: "true"
+    depends_on: [api]
+volumes:
+  postgres:
+  documents:
+  qdrant:
+  webui:

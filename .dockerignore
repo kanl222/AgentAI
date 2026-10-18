@@ -1,0 +1,12 @@
+.env
+.env.*
+data
+work
+.test-deps
+.uv-cache
+.build-temp
+.venv
+.git
+__pycache__
+.pytest_cache
+tests
