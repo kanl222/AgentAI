@@ -1,0 +1,21 @@
+{
+  "name": "agentai-chat",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build:assets": "node scripts/build-assets.mjs",
+    "prestart": "npm run build:assets",
+    "start": "node start.mjs",
+    "predev": "npm run build:assets",
+    "dev": "node --watch start.mjs",
+    "pretest": "npm run build:assets",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@highlightjs/cdn-assets": "11.12.0"
+  }
+}

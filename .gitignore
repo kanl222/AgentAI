@@ -12,6 +12,19 @@
 /backups/
 /upload.json
 
+# Локальная память помощника и служебные файлы SQLite.
+/sqlite-memory.db
+/sqlite-memory.db-shm
+/sqlite-memory.db-wal
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Кеши и снимки оформления; настройки дизайна сохраняем.
+/.impeccable/hook.cache.json
+/.impeccable/questions/
+/.impeccable/review/
+
 # Виртуальные среды и локально установленные зависимости.
 .venv/
 venv/

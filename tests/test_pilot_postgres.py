@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from fastapi import HTTPException
+from agentai.errors import ApplicationError as HTTPException
 from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage, HumanMessage
 from qdrant_client import QdrantClient
@@ -66,6 +66,29 @@ def test_retention_and_history_budget(monkeypatch):
     assert memory.list(user)==[]
 
 
+def test_display_history_is_complete_but_model_context_stays_bounded():
+    memory=Conversations(Database()); user=actor(); identity=memory.create(user)
+    memory.append(identity,user,'Первый вопрос',{'answer':'a'*5000,'sources':[]})
+    memory.append(identity,user,'Второй вопрос',{'answer':'b'*2000,'sources':[]})
+    assert len(memory.get(identity,user)['turns'])==1
+    displayed=memory.get(identity,user,display=True)
+    assert len(displayed['turns'])==2
+    assert len(displayed['turns'][0]['answer'])==5000
+    assert displayed['title']=='Первый вопрос'
+    assert memory.get(identity,actor(sources=[]),display=True)['turns']==[]
+    with pytest.raises(HTTPException): memory.get(identity,actor('bob'),display=True)
+
+
+def test_pending_chat_exposes_identity_without_exposing_payload():
+    memory=Conversations(Database()); jobs=Jobs(Database()); user=actor()
+    identity=memory.create(user)
+    queued=jobs.enqueue('chat',{'question':'Вопрос','conversation_id':identity},user)
+    job=jobs.get(queued['id'],user)
+    assert job['conversation_id']==identity
+    assert 'payload' not in job
+    with pytest.raises(HTTPException): jobs.get(queued['id'],actor('bob'))
+
+
 def test_api_continuation_and_clear(pilot):
     client,store,model=pilot
     first=client.post('/chat',headers=headers(),json={'question':'Объясни метод'}).json()
@@ -117,7 +140,9 @@ def test_staged_index_failure_preserves_old_version(pilot):
 def test_neighbors_are_ordered_and_acl_filtered(pilot):
     _,store,_=pilot
     store.replace('a',chunks('\n'.join('Line '+str(i) for i in range(120)),'a','document:a/long.md'))
-    rows=store.search('long.md',['a']); row=next(r for r in rows if '#L51-' in r['citation'])
+    rows=store.search('long.md',['a'])
+    ordered=sorted(rows,key=lambda r:int(r['citation'].split('#L')[1].split('-')[0]))
+    row=ordered[1]
     adjacent=store.read_source(row['id'],['a'],-1,3)
     assert len(adjacent)==3 and '#L1-' in adjacent[0]['citation']
     assert store.read_source(row['id'],['b'])==[]

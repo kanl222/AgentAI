@@ -1,3 +1,5 @@
+> Это сохранённый старый интерфейс. Новый чат находится в `web/chat` на порту 3000; консоль API — в `web/api-console` на порту 8000. Open WebUI запускается отдельно с профилем `legacy-webui` на порту 3001.
+
 # Установка frontend Open WebUI для AgentAI
 
 В этом проекте Open WebUI находится в папке `frontend` и собирается локально.
@@ -54,13 +56,13 @@ cd D:\Source\AgentAI
 При первой установке:
 
 ```powershell
-docker compose up -d --build postgres qdrant api webui
+docker compose --profile legacy-webui up -d --build postgres qdrant api webui
 ```
 
 Если сервер AgentAI и базы уже работают, достаточно:
 
 ```powershell
-docker compose up -d --build webui
+docker compose --profile legacy-webui up -d --build webui
 ```
 
 Проверка состояния и журнала:
@@ -70,7 +72,7 @@ docker compose ps
 docker compose logs --tail 100 webui
 ```
 
-Откройте <http://localhost:3000>. API AgentAI доступен по адресу
+Откройте <http://localhost:3001>. API AgentAI доступен по адресу
 <http://localhost:8000/docs>, библиотека документов — <http://localhost:8000/library>.
 
 Команды выполняются из корня проекта, а не из `frontend`. Корневой Compose
@@ -132,7 +134,7 @@ WebUI не означает, что AgentAI её использует: AgentAI �
 
 ```powershell
 cd D:\Source\AgentAI
-docker compose up -d --build --no-deps webui
+docker compose --profile legacy-webui up -d --build --no-deps webui
 ```
 
 Для обычного запуска уже собранной установки:
@@ -172,7 +174,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     environment:
-      CORS_ALLOW_ORIGIN: "http://localhost:5173;http://localhost:3000"
+      CORS_ALLOW_ORIGIN: "http://localhost:5173;http://localhost:3001"
 ```
 
 Запустите из корня:

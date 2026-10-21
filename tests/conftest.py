@@ -21,6 +21,8 @@ def isolated_document_archive(tmp_path, monkeypatch):
     monkeypatch.setenv('ENABLE_JOB_WORKER','false')
     monkeypatch.setenv('QUEUE_WEBUI_REQUESTS','false')
     api.database.cache_clear()
+    if pg:
+        api.database()
     catalog=DocumentArchive(tmp_path/'documents')
     monkeypatch.setattr(api,'archive',lambda:catalog)
     yield catalog

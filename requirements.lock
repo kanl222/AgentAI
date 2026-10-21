@@ -17,10 +17,16 @@ certifi==2026.7.22
     #   httpx
     #   langchain-openai
     #   requests
+cffi==2.1.1 ; platform_python_implementation != 'PyPy'
+    # via cryptography
 charset-normalizer==3.5.2
-    # via requests
+    # via
+    #   pdfminer-six
+    #   requests
 click==8.5.0
     # via uvicorn
+cryptography==50.0.2
+    # via pdfminer-six
 distro==1.9.0
     # via langsmith
 fastapi==0.145.0
@@ -120,6 +126,12 @@ packaging==26.3
     # via
     #   langchain-core
     #   langsmith
+pdfminer-six==20260107
+    # via pdfplumber
+pdfplumber==0.11.10
+    # via agentai
+pillow==13.0.0
+    # via pdfplumber
 portalocker==3.2.0
     # via qdrant-client
 protobuf==7.36.2
@@ -128,6 +140,8 @@ psycopg==3.3.6
     # via agentai
 psycopg-binary==3.3.6 ; implementation_name != 'pypy'
     # via psycopg
+pycparser==3.11 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
+    # via cffi
 pydantic==2.14.1
     # via
     #   fastapi
@@ -141,6 +155,8 @@ pydantic-core==2.50.1
     # via pydantic
 pypdf==6.21.1
     # via agentai
+pypdfium2==5.14.0
+    # via pdfplumber
 python-docx==1.2.0
     # via agentai
 pywin32==312 ; sys_platform == 'win32'
@@ -149,7 +165,7 @@ pyyaml==6.0.3
     # via
     #   agentai
     #   langchain-core
-qdrant-client==1.19.1
+qdrant-client==1.16.2
     # via agentai
 rank-bm25==0.2.2
     # via agentai

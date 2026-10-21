@@ -5,6 +5,7 @@ const shown=new Set();
 const labels={queued:'В очереди',running:'Выполняется',succeeded:'Готово',failed:'Ошибка',cancelled:'Отменено',pending:'Ожидает индексации',indexed:'В поиске',superseded:'Предыдущая версия',removed:'Убран из поиска',current:'Актуальный',obsolete:'Устаревший',draft:'Черновик'};
 function node(tag,text){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;}
 function status(text){$('status').textContent=text;}
+function clearRequest(){ $('request-result').textContent=''; $('request-status').textContent='Ответ появится здесь.'; $('request-body').value='{}'; }
 async function api(path,options={}){
  if(!token)throw Error('Сначала подключитесь с ключом API.');
  const epoch=session;
@@ -21,8 +22,8 @@ function message(title,text){$('messages').append(node('strong',title),node('pre
 async function loadHistory(){shown.clear();$('messages').replaceChildren();if(!conversation)return;const c=await (await api('/conversations/'+conversation)).json();for(const t of c.turns){message('Вы',t.question);message('Агент',t.answer);}}
 async function loadDocuments(reset=true){if(reset){offset=0;$('documents').replaceChildren();}const r=await (await api('/documents?limit=50&offset='+offset)).json();for(const d of r.versions){const tr=node('tr'),file=node('td'),ver=node('td'),state=node('td'),buttons=node('td');file.append(node('strong',d.filename),node('p',d.source));ver.append(node('small',d.version),node('p',d.uploaded_at));state.append(node('p',(labels[d.state]||d.state)+' / '+(labels[d.validity]||d.validity||'—')),node('small',d.note||''));buttons.append(action('Скачать',async()=>{const r=await api('/documents/'+d.version+'/original');const url=URL.createObjectURL(await r.blob());const a=node('a');a.href=url;a.download=d.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}),action('Переиндексировать',async()=>{await json('/documents/'+d.version+'/reindex',{});status('Задание переиндексации добавлено.');await loadJobs();}),action('Актуальность',async()=>{const validity=prompt('Статус: current, obsolete или draft',d.validity||'current');if(!validity)return;const note=prompt('Примечание',d.note||'');if(note===null)return;await json('/documents/'+d.version,{validity,note},'PATCH');await loadDocuments();}));if(d.state==='indexed')buttons.append(action('Убрать из поиска',async()=>{if(!confirm('Убрать документ из поиска? Оригинал останется.'))return;await json('/documents/'+d.version,{},'DELETE');await loadJobs();}));tr.append(file,ver,state,buttons);$('documents').append(tr);}offset+=r.versions.length;$('more').disabled=r.versions.length<50;}
 async function loadJobs(){const r=await (await api('/jobs')).json();$('jobs').replaceChildren();let completed=false;for(const j of r.jobs){const row=node('div');row.className='job';row.append(node('strong',(labels[j.state]||j.state)+' · '+j.kind+' · '+j.id.slice(0,8)));const progress=node('progress');progress.max=100;progress.value=j.progress;row.append(node('br'),progress,node('span',' '+j.progress+'%'));if(j.error)row.append(node('p',j.error));if(j.state==='queued')row.append(action('Отменить',async()=>{await api('/jobs/'+j.id,{method:'DELETE'});await loadJobs();}));if(j.state==='succeeded'&&!shown.has(j.id)){shown.add(j.id);completed=true;if(j.kind==='chat'&&j.result&&j.result.conversation_id===conversation){message('Агент',j.result.answer);}}$('jobs').append(row);}if(completed)await loadDocuments();}
-$('connect').onsubmit=e=>{e.preventDefault();guard(async()=>{clearInterval(timer);session++;token=$('key').value;$('key').value='';conversation='';$('messages').replaceChildren();shown.clear();await loadConversations();await loadDocuments();const r=await (await api('/jobs')).json();r.jobs.filter(j=>j.state==='succeeded').forEach(j=>shown.add(j.id));await loadJobs();status('Подключено.');timer=setInterval(()=>guard(loadJobs),4000);});};
-$('disconnect').onclick=()=>{clearInterval(timer);session++;token='';conversation='';$('key').value='';$('question').value='';$('files').value='';for(const id of ['documents','jobs','messages','conversations'])$(id).replaceChildren();status('Отключено.');};
+$('connect').onsubmit=e=>{e.preventDefault();guard(async()=>{clearInterval(timer);clearRequest();session++;token=$('key').value;$('key').value='';conversation='';$('messages').replaceChildren();shown.clear();await loadConversations();await loadDocuments();const r=await (await api('/jobs')).json();r.jobs.filter(j=>j.state==='succeeded').forEach(j=>shown.add(j.id));await loadJobs();status('Подключено.');timer=setInterval(()=>guard(loadJobs),4000);});};
+$('disconnect').onclick=()=>{clearInterval(timer);clearRequest();session++;token='';conversation='';$('key').value='';$('question').value='';$('files').value='';for(const id of ['documents','jobs','messages','conversations'])$(id).replaceChildren();status('Отключено.');};
 $('conversations').onchange=()=>guard(async()=>{conversation=$('conversations').value;await loadHistory();});
 $('new-chat').onclick=()=>guard(async()=>{const c=await json('/conversations',{});conversation=c.id;await loadConversations();await loadHistory();});
 $('delete-chat').onclick=()=>guard(async()=>{if(!conversation||!confirm('Удалить историю диалога?'))return;await api('/conversations/'+conversation,{method:'DELETE'});conversation='';await loadConversations();await loadHistory();});
@@ -32,3 +33,16 @@ $('upload').onsubmit=e=>{e.preventDefault();guard(async()=>{for(const file of $(
 $('gitlab').onsubmit=e=>{e.preventDefault();guard(async()=>{await json('/jobs/gitlab',{source:$('repo').value});status('Синхронизация в очереди.');await loadJobs();});};
 $('refresh').onclick=()=>guard(async()=>{await loadDocuments();await loadJobs();await loadConversations();});
 $('more').onclick=()=>guard(()=>loadDocuments(false));
+$('request-method').onchange=()=>{$('request-body-label').hidden=!['POST','PATCH'].includes($('request-method').value);};
+$('request-form').onsubmit=e=>{e.preventDefault();guard(async()=>{
+ if(!token)throw Error('Сначала подключитесь с ключом API.');
+ const url=new URL($('request-path').value,location.origin);
+ if(url.origin!==location.origin||!$('request-path').value.startsWith('/'))throw Error('Укажите путь этого API, например /ready.');
+ const method=$('request-method').value, epoch=session, start=performance.now(), options={method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},cache:'no-store'};
+ if(['POST','PATCH'].includes(method))options.body=JSON.stringify(JSON.parse($('request-body').value));
+ $('request-send').disabled=true;$('request-status').textContent='Выполняется…';
+ try{const r=await fetch(url,options),text=await r.text();if(epoch!==session)return;
+ $('request-status').textContent='HTTP '+r.status+' · '+Math.round(performance.now()-start)+' мс';
+ try{$('request-result').textContent=JSON.stringify(JSON.parse(text),null,2);}catch{$('request-result').textContent=text;}
+ }catch(error){if(epoch===session)$('request-status').textContent='Запрос не выполнен. Проверьте соединение и повторите.';throw error;}finally{$('request-send').disabled=false;}
+});};

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>AgentAI — чат</title>
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/chat.css">
+  <script src="/chat.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#question">К вопросу</a>
+  <div class="app">
+    <button class="sidebar-backdrop" id="sidebar-backdrop" aria-label="Закрыть историю" hidden></button>
+    <aside class="sidebar" id="sidebar" aria-label="История диалогов">
+      <a class="brand" href="/" aria-label="AgentAI — главная"><span class="brand-symbol" aria-hidden="true">a</span><span>Agent<span class="brand-light">AI</span></span></a>
+      <button class="new-chat" id="new-chat"><span data-icon="plus"></span>Новый диалог<span class="shortcut">Ctrl K</span></button>
+      <label class="search-box"><span data-icon="search"></span><input id="history-search" type="search" placeholder="Найти диалог" aria-label="Найти диалог"></label>
+      <div class="history-heading"><span>Диалоги</span><span id="history-count"></span></div>
+      <nav class="history" id="history" aria-label="Ваши диалоги"><p class="history-empty">Подключитесь, чтобы увидеть историю.</p></nav>
+      <div class="sidebar-bottom">
+        <button class="nav-button" id="open-documents"><span data-icon="folder"></span>Документы<span data-icon="arrow-up-right"></span></button>
+        <button class="account" id="open-connection"><span class="avatar" data-icon="user"></span><span><strong id="account-name">Подключение</strong><small id="account-detail">Личный ключ доступа</small></span><span data-icon="settings"></span></button>
+      </div>
+    </aside>
+    <main class="workspace" id="main">
+      <header class="topbar">
+        <div class="topbar-left"><button class="icon-button mobile-menu" id="mobile-menu" aria-label="Открыть историю" aria-expanded="false"><span data-icon="menu"></span></button><div><h1 id="chat-title">Новый диалог</h1><span class="agent-label">AgentAI · ответы по вашим источникам</span></div></div>
+        <div class="topbar-actions"><span class="connection-status" id="connection-status"><i></i><span>Не подключено</span></span><button class="icon-button theme-toggle" id="toggle-theme" aria-label="Тёмная тема" aria-pressed="false" title="Включить тёмную тему"><svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z"/></svg><svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button><button class="icon-button" id="delete-chat" aria-label="Удалить текущий диалог" title="Удалить диалог" hidden><span data-icon="trash"></span></button></div>
+      </header>
+      <div class="timeline" id="timeline">
+        <section class="welcome" id="welcome">
+          <div class="welcome-mark" aria-hidden="true"><span data-icon="spark"></span></div>
+          <h2>Разберёмся вместе.</h2>
+          <p>Задайте вопрос по документам или коду.<br>AgentAI найдёт нужное и покажет источники.</p>
+          <div class="suggestions">
+            <button data-prompt="Какие значения принимает flag_order?"><span data-icon="sliders"></span><span>Разобраться в параметрах<small>Какие значения принимает flag_order?</small></span><span data-icon="arrow-up-right"></span></button>
+            <button data-prompt="Сравни report_type для SSRS и ИСЛО и соответствующие контроллеры."><span data-icon="compare"></span><span>Сравнить по документации<small>Чем отличаются отчёты SSRS и ИСЛО?</small></span><span data-icon="arrow-up-right"></span></button>
+            <button data-prompt="Какой файл отвечает за каталог и доступ? Приведи его путь."><span data-icon="code"></span><span>Найти в проекте<small>Где находится каталог отчётов?</small></span><span data-icon="arrow-up-right"></span></button>
+          </div>
+        </section>
+        <div class="messages" id="messages" aria-label="Сообщения диалога"></div>
+      </div>
+      <div class="compose-area">
+        <div class="notice" id="notice" role="alert" hidden><span id="notice-text"></span><button class="icon-button" id="dismiss-notice" aria-label="Скрыть уведомление"><span data-icon="close"></span></button></div>
+        <form class="composer" id="chat-form">
+          <label class="sr-only" for="question">Сообщение AgentAI</label>
+          <textarea id="question" rows="1" maxlength="12000" placeholder="Спросите что-нибудь…"></textarea>
+          <div class="composer-bottom"><span class="composer-context"><span data-icon="book"></span>Поиск по доступным источникам</span><div class="composer-actions"><span id="character-count" hidden></span><button class="send-button" id="send" type="submit" aria-label="Отправить сообщение" title="Отправить (Enter)"><span data-icon="arrow-up"></span></button></div></div>
+        </form>
+        <p class="composer-note">Проверяйте важные выводы по источникам.<span>Enter — отправить · Shift Enter — новая строка</span></p>
+      </div>
+    </main>
+    <aside class="detail-panel" id="detail-panel" aria-label="Источники и документы" hidden>
+      <div class="panel-header"><h2 id="panel-title">Источники</h2><button class="icon-button" id="close-panel" aria-label="Закрыть панель"><span data-icon="close"></span></button></div>
+      <div class="panel-body" id="panel-body"></div>
+    </aside>
+  </div>
+  <dialog id="connection-dialog" class="connection-dialog">
+    <form id="connection-form">
+      <div class="dialog-heading"><span class="brand-symbol" aria-hidden="true">a</span><button type="button" class="icon-button" id="close-connection" aria-label="Закрыть"><span data-icon="close"></span></button></div>
+      <h2>Подключиться к AgentAI</h2><p>Используйте личный ключ доступа к вашему серверу.</p>
+      <label for="access-key">Ключ доступа</label><input id="access-key" type="password" required autocomplete="off" spellcheck="false" placeholder="Введите ключ">
+      <p class="field-note">Ключ остаётся в памяти страницы. После обновления потребуется подключиться заново.</p>
+      <p id="connection-error" class="field-error" role="alert" hidden></p>
+      <button class="primary-button" id="connect-button">Подключиться</button>
+      <button class="text-button" id="disconnect" type="button" hidden>Отключиться</button>
+    </form>
+  </dialog>
+  <dialog id="delete-dialog" class="connection-dialog">
+    <form method="dialog"><h2>Удалить диалог?</h2><p>Вопросы и ответы будут удалены из истории. Документы сохранятся.</p><div class="dialog-actions"><button class="secondary-button" value="cancel">Оставить</button><button class="danger-button" value="delete">Удалить диалог</button></div></form>
+  </dialog>
+  <div class="sr-only" id="announcer" role="status" aria-live="polite"></div>
+</body>
+</html>

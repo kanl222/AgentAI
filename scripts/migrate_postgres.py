@@ -29,4 +29,6 @@ def migrate(root, database):
 
 
 if __name__=='__main__':
-    print('Verified migrated original versions:',migrate(Path(os.getenv('DOCUMENTS_DIR','data/documents')).resolve(),Database()))
+    database = Database()
+    database.migrate()
+    print('Verified migrated original versions:',migrate(Path(os.getenv('DOCUMENTS_DIR','data/documents')).resolve(),database))

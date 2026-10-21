@@ -1,0 +1,8 @@
+node_modules
+public/vendor
+*.log
+.env
+.env.*
+README.md
+Dockerfile
+.git

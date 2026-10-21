@@ -10,3 +10,10 @@ work
 __pycache__
 .pytest_cache
 tests
+frontend
+outputs
+backups
+.impeccable
+sqlite-memory.db
+sqlite-memory.db-shm
+sqlite-memory.db-wal
