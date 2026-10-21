@@ -37,21 +37,29 @@ class AnswerSession:
     pinned_documents: set = field(default_factory=set, init=False)
     scope_ready: bool = field(default=False, init=False)
     query: str = field(init=False)
+    context_query: str = field(default='', init=False)
+    equivalences: dict = field(default_factory=dict, init=False)
+    routing_status: str = field(default='not_needed', init=False)
 
     def __post_init__(self):
         self.query = self.question[:2000]
-        # A conversation retains its selected document until an explicit target
-        # or topic change. Length and a small keyword list cannot infer intent.
-        followup = True
+        # Carry a document only for a reference to the preceding exchange.
+        # An ordinary standalone question must search the whole authorized index.
+        followup = bool(re.search(
+            r'\b(?:при этом|об этом|в этом|для этого|из этого|'
+            r'такой|такая|(?<!что )такое|такие|таким|таком|этот|эта|это|эти|'
+            r'предыдущ\w*|вышеуказан\w*|упомянут\w*)\b', self.question.lower())
+            or re.fullmatch(r'\s*(?:расскажи |объясни |покажи )?(?:подробнее|продолжи|продолжай)'
+                            r'[\s.!?]*', self.question.lower()))
         if re.search(r'\b(?:другая тема|сменим тему|новый вопрос|теперь о другом)\b',self.question.lower()):
             followup = False
         if followup and self.history and not any(explicit_targets(self.question)):
             previous = self.history[-1]
             self.pinned_documents.update(tuple(key) for key in previous.get('context', {}).get('selected', []))
-            self.scope_ready = bool(self.pinned_documents)
             targets = ' '.join(key[1].rsplit('/',1)[-1].split('@',1)[0]
                                for key in sorted(self.pinned_documents))[:400]
-            self.query = (self.question[:1000]+' '+previous['question'][:500]+' '+targets)[:2000]
+            if self.pinned_documents:
+                self.context_query = (self.question[:1000]+' '+previous['question'][:500]+' '+targets)[:2000]
 
     def remember(self, rows):
         result = []
@@ -87,6 +95,11 @@ class AnswerSession:
     def retrieve(self):
         try:
             self.search(self.query)
+            if self.context_query:
+                # Conversation context adds evidence; it never excludes a fresh
+                # global search or changes the current user's search question.
+                contextual = self.remember(self.store.search(self.context_query, self.user['sources']))
+                self.rows = merge_evidence(contextual, self.rows)
             if hasattr(self.store, 'read_source') and self.rows:
                 first = self.rows[0]
                 neighbors = self.remember(self.store.read_source(first['id'], self.user['sources'], -1, 3))

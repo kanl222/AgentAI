@@ -49,9 +49,10 @@ def test_second_pass_is_checked_and_not_retried_indefinitely():
     model = Model(['Значения flag_order не указаны. Значения: 1, 2, 3. [S1]'])
     result = answer('Какие значения принимает flag_order?', USER, Store(), model, max_steps=8)
     assert len(model.calls) == 2
-    assert not result['validation']['passed']
-    assert any(i['code'] == 'contradictory_absence' for i in result['validation']['issues'])
-    assert 'не прошёл проверку' in result['answer'].lower()
+    assert result['validation']['passed']
+    assert result['retrieval']['extractive_fallback']
+    assert 'Значения flag_order не указаны' not in result['answer']
+    assert '> '+TEXT in result['answer']
 
 
 def test_honest_absence_and_unrelated_numbered_instructions_are_not_a_contradiction():
@@ -84,14 +85,16 @@ def test_validation_respects_one_step_budget():
     model = Model(['Значения flag_order не указаны. Значения: 1, 2, 3. [S1]'])
     result = answer('Какие значения принимает flag_order?', USER, Store(), model, max_steps=1)
     assert len(model.calls) == 1
-    assert not result['validation']['passed']
+    assert result['validation']['passed']
     assert not result['validation']['correction_attempted']
+    assert result['retrieval']['extractive_fallback']
 
 
-def test_second_pass_can_introduce_a_new_contradiction_and_is_rejected():
+def test_second_pass_contradiction_is_replaced_with_original_source():
     model = Model(['Значения flag_order: 1, 2, 3. [S99]',
                    'Значения flag_order не указаны. Значения: 1, 2, 3. [S1]'])
     result = answer('Какие значения принимает flag_order?', USER, Store(), model)
     assert len(model.calls) == 2
-    assert not result['validation']['passed']
-    assert any(i['code'] == 'contradictory_absence' for i in result['validation']['issues'])
+    assert result['validation']['passed']
+    assert result['retrieval']['extractive_fallback']
+    assert '> '+TEXT in result['answer']

@@ -64,7 +64,7 @@ def main():
     os.environ['CHAT_MODEL'] = args.model
     embeddings, model = lmstudio_clients()
     if args.reasoning_off:
-        model.extra_body = {'reasoning': 'off'}
+        model.extra_body = {**(model.extra_body or {}), 'reasoning': 'off'}
     store = Store(embeddings)
     user = authenticate('Bearer ' + os.environ['WEBUI_READER_KEY'])
     result = {'model': args.model, 'temperature': model.temperature, 'max_tokens': model.max_tokens,

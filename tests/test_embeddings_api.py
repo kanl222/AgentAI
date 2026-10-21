@@ -60,6 +60,22 @@ def test_base64_format(client):
     assert struct.unpack('<ff', vector) == (0.0, 0.5)
 
 
+def test_raw_embeddings_proxy_uses_dedicated_endpoint_without_query_instruction(monkeypatch):
+    from agentai.adapters.embeddings import EmbeddingRequest
+    monkeypatch.setenv('EMBED_BASE_URL', 'http://cpu/v1')
+    monkeypatch.setenv('EMBED_MODEL', 'qwen')
+    monkeypatch.setenv('EMBED_API_KEY', 'cpu-key')
+    monkeypatch.setenv('EMBED_QUERY_INSTRUCTION', 'Must not be injected by the generic proxy')
+    def handler(request):
+        assert str(request.url) == 'http://cpu/v1/embeddings'
+        assert request.headers['authorization'] == 'Bearer cpu-key'
+        assert json.loads(request.content)['input'] == ['Original text']
+        return httpx.Response(200, json={'data': [{'index': 0, 'embedding': [1., .5]}],
+                                        'usage': {'prompt_tokens': 2, 'total_tokens': 2}})
+    with httpx.Client(transport=httpx.MockTransport(handler)) as upstream:
+        assert request_embeddings(EmbeddingRequest(input='Original text'), upstream)['model'] == 'qwen'
+
+
 def test_roles_and_unknown_key(client):
     assert client.post('/v1/embeddings', json={'input': 'x'}).status_code == 401
     assert post(client, {'input': 'x'}, 'unknown').status_code == 401

@@ -35,7 +35,7 @@ def finalize(question, result, retrieved) -> AnswerResult:
         text += '\n\nОтвет оборван из-за лимита токенов. Код неполный; запросите меньшую часть задачи.'
     text, cited, warnings = render_citations(text, retrieved)
     text = without_source_lists(text)
-    validation_issues = [] if result.get('direct_answer') else inspect_answer(question, str(final_message.content), retrieved)
+    validation_issues = [] if result.get('direct_answer') else inspect_answer(question, str(final_message.content), retrieved,cited=cited)
     citation_issues = [{'code':'citation', 'message':warning} for warning in warnings]
     if retrieved and not cited and not result.get('direct_answer'):
         citation_issues.append({'code':'missing_citation', 'message':'Нет точной ссылки на найденный источник.'})

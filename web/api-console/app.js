@@ -34,6 +34,7 @@ $('gitlab').onsubmit=e=>{e.preventDefault();guard(async()=>{await json('/jobs/gi
 $('refresh').onclick=()=>guard(async()=>{await loadDocuments();await loadJobs();await loadConversations();});
 $('more').onclick=()=>guard(()=>loadDocuments(false));
 $('request-method').onchange=()=>{$('request-body-label').hidden=!['POST','PATCH'].includes($('request-method').value);};
+$('service-check').onclick=()=>{$('request-method').value='GET';$('request-method').onchange();$('request-path').value='/diagnostics/services';$('request-form').requestSubmit();};
 $('request-form').onsubmit=e=>{e.preventDefault();guard(async()=>{
  if(!token)throw Error('Сначала подключитесь с ключом API.');
  const url=new URL($('request-path').value,location.origin);

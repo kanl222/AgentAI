@@ -12,10 +12,12 @@ from ..access import require
 from ..adapters.sqlserver import sql_metadata
 from .session import AnswerSession
 from .citations import render_citations
-from .validation import inspect_answer
+from .validation import inspect_answer, prose
 from .code_checks import normalize_sql_aliases, normalize_sort_contract, normalize_requested_format
 from .result import finalize
 from .skill_selection import select_skill
+from .routing import expand_candidates
+from .extractive import evidence_answer, definition_answer
 
 
 class State(TypedDict):
@@ -75,14 +77,22 @@ def answer(question,user,store,model,max_steps=4,history=None):
                 ToolMessage(content=json.dumps(rows,ensure_ascii=False),tool_call_id=call_id)]
     def retrieve(state):
         session.retrieve()
+        direct = session.direct_quote() or session.missing_target() or definition_answer(question,session.rows)
+        if not direct:
+            expand_candidates(session, model)
+            direct=definition_answer(question,session.rows)
         name = select_skill(question,session.rows)
         if name in catalog:
             loaded_skills[name] = catalog[name][1][:4000]
-        direct = session.direct_quote() or session.missing_target()
         return {'messages':retrieval_messages(),'direct_answer':direct}
     def call(state):
         graph_history = state['messages']
         policy = graph_history[0].content
+        if session.equivalences:
+            policy += ('\nИз самого текста источников установлены равнозначные написания сокращений: '
+                       +json.dumps(session.equivalences,ensure_ascii=False)+
+                       '. Различие пробелов и регистра не является отсутствием информации. '
+                       'Объясни предмет вопроса по найденным материалам.')
         if loaded_skills:
             policy += '\nAlready loaded skills:\n'+json.dumps(loaded_skills,ensure_ascii=False)
         if 'code' in loaded_skills and 'сложност' in question.lower():
@@ -118,7 +128,7 @@ def answer(question,user,store,model,max_steps=4,history=None):
         if (not message.tool_calls and session.rows and not repaired
                 and steps < max_steps and message.response_metadata.get('finish_reason') != 'length'):
             _, cited, issues = render_citations(str(message.content), list(session.evidence.values()))
-            content_issues = inspect_answer(question, str(message.content), list(session.evidence.values()))
+            content_issues = inspect_answer(question, str(message.content), list(session.evidence.values()),cited=cited)
             if not cited or issues or content_issues:
                 repaired = True
                 steps += 1
@@ -180,4 +190,18 @@ def answer(question,user,store,model,max_steps=4,history=None):
     policy += '\nSkill catalog: '+json.dumps({k:v[0] for k,v in catalog.items()},ensure_ascii=False)
     result = graph.compile().invoke({'messages':[SystemMessage(content=policy),HumanMessage(content=question)],'steps':0,'direct_answer':'',
                                     'citation_repaired':False,'citation_repair_failed':False,'review_feedback':''},{'recursion_limit':2*max_steps+4})
-    return finalize(question, result, list(session.evidence.values()))
+    evidence=list(session.evidence.values())
+    final_text=str(result['messages'][-1].content)
+    _,cited,link_warnings=render_citations(final_text,evidence)
+    final_issues=inspect_answer(question,final_text,evidence,cited=cited)
+    if link_warnings and cited and '```' not in final_text:
+        anchors=set(re.findall(r'\b[A-Za-z][A-Za-z0-9]*_[A-Za-z_0-9]+\b',prose(final_text)))
+        supported=[row for row in cited if any(anchor in re.sub(r'\s+','',row['text']) for anchor in anchors)]
+        if supported:
+            final_issues.append({'code':'unverified_address','evidence':supported})
+    fallback=evidence_answer(final_issues,evidence)
+    if fallback:
+        result['messages'][-1]=AIMessage(content=fallback)
+    response = finalize(question, result, evidence)
+    response['retrieval'] = {'catalog_selection': session.routing_status, 'extractive_fallback': bool(fallback)}
+    return response

@@ -30,8 +30,9 @@ def test_long_followup_retains_source_and_search_target():
                 'context':{'selected':[['docs','document:docs/orders.md@v1']]}}]
     question = 'Подробнее: как при этом сортируются клиенты с равными суммами? Ответь кратко со ссылкой.'
     session = AnswerSession(question, USER, Store(), history)
-    assert session.scope_ready
-    assert 'orders.md' in session.query
+    assert not session.scope_ready
+    assert session.query == question
+    assert 'orders.md' in session.context_query
 
 
 def test_explicit_new_document_or_topic_does_not_keep_previous_scope():
@@ -45,7 +46,7 @@ def test_third_turn_keeps_target_when_previous_question_has_no_filename():
     history = [{'question':'Какой порядок при равных суммах?', 'answer':'answer',
                 'context':{'selected':[['docs','document:docs/orders.md@v1']]}}]
     session = AnswerSession('Почему выбран такой порядок?',USER,Store(),history)
-    assert session.scope_ready and 'orders.md' in session.query
+    assert not session.scope_ready and 'orders.md' in session.context_query
 
 
 def test_code_skill_is_injected_before_the_first_generation():

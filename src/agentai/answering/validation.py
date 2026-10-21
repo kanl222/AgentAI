@@ -6,6 +6,8 @@ import re
 
 from ..knowledge.scoping import explicit_targets
 from .code_checks import checks as code_checks
+from .absence import absence_issues
+from .grouped_lists import unpaired_table_claims
 
 
 def prose(text):
@@ -58,7 +60,14 @@ def relation_values(text, labels, candidates):
         matches = list(label_pattern.finditer(paragraph))
         for index, match in enumerate(matches):
             end = matches[index+1].start() if index+1 < len(matches) else len(paragraph)
-            found[label_lookup[match.group().casefold()]].update(values(paragraph[match.end():end]))
+            part=paragraph[match.end():end]
+            start=paragraph.rfind('\n',0,match.start())+1
+            indentation=len(re.match(r'[ \t]*',paragraph[start:match.start()]).group())
+            for boundary in re.finditer(r'\n([ \t]*)(?:[-*+]|\d+[.)])\s+',part):
+                if len(boundary.group(1))<=indentation:
+                    part=part[:boundary.start()]
+                    break
+            found[label_lookup[match.group().casefold()]].update(values(part))
     return found
 
 
@@ -69,19 +78,43 @@ def _issue(code, message, rows, excerpts=None):
                          for row in rows[:3]]}
 
 
-def inspect_answer(question, text, rows):
+def inspect_answer(question, text, rows, cited=None):
     body = prose(text)
     issues = []
+    if '```' not in text and any(row.get('ref') for row in rows):
+        if cited is None:
+            refs={'S'+number for number in re.findall(r'\[\s*[SСC]\s*(\d+)\s*\]',text)}
+            cited=[row for row in rows if row.get('ref') in refs or row['citation'] in text]
+        if cited:
+            for identifier in set(re.findall(r'\b[A-Za-z][A-Za-z0-9]*_[A-Za-z_0-9]+\b',body)):
+                relevant=[row for row in rows if identifier in re.sub(r'\s+','',row['text'])]
+                if relevant and not any(identifier in re.sub(r'\s+','',row['text']) for row in cited):
+                    issues.append(_issue('citation_support',
+                        'Утверждение об идентификаторе '+identifier+' ссылается на другой материал. '
+                        'Поставь ref фрагмента, который содержит этот идентификатор и его описание.',relevant))
+    issues.extend(_issue(code,message,relevant) for code,message,relevant in absence_issues(question,body,rows))
+    issues.extend(_issue('ambiguous_list_mapping',
+        'Источник перечисляет операции и таблицы группами, но не задаёт отдельных пар. '
+        'Приведи названия групп и список таблиц; не назначай одну таблицу каждой операции '
+        'без отдельного подтверждающего фрагмента.', [row])
+        for row,excerpt in unpaired_table_claims(body,rows))
     absent_values = re.search(
         r'\bзначени\w*[^.!?\n]{0,100}(?:не\s+указан\w*|отсутств\w*)|'
-        r'\bне\s+указан\w*[^.!?\n]{0,100}значени\w*', body, re.I)
-    if absent_values:
+        r'\b(?:не\s+(?:указан\w*|найден\w*)|нет|отсутств\w*)[^.!?\n]{0,100}значени\w*', body, re.I)
+    counts_question = re.match(r'^\s*(?:сколько\b|каково\s+количество\b|какое\s+количество\b)',question,re.I)
+    if absent_values and not counts_question:
         _, identifiers = explicit_targets(question)
         relevant = [row for row in rows if not identifiers or any(
             word.casefold() in re.sub(r'\s+', '', row['text']).casefold() for word in identifiers)]
+        listed = [row for row in relevant if len(re.findall(r'=\s*\d+\b',row['text']))>=2]
+        if listed:
+            from ..knowledge.text import lexical_tokens
+            terms=set(lexical_tokens(question))
+            relevant=sorted(listed,key=lambda row:len(terms.intersection(lexical_tokens(row['text']))),reverse=True)
         # An explicit list in the answer contradicts the absence claim. A known
         # field's list in evidence also disproves an unsupported absence claim.
-        answer_list = re.search(r'значени\w*\s*[:—-][^.!?\n]*\d[^.!?\n]*\d', body, re.I)
+        answer_list = (re.search(r'значени\w*\s*[:—-][^.!?\n]*\d[^.!?\n]*\d', body, re.I)
+                       or len(re.findall(r'=\s*\d+\b', body)) >= 2)
         evidence_list = identifiers and any(len(re.findall(r'=\s*\d+\b', row['text'])) >= 2 for row in relevant)
         if answer_list or evidence_list:
             issues.append(_issue('contradictory_absence',

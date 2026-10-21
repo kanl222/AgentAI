@@ -15,6 +15,25 @@ services:
   qdrant:
     image: qdrant/qdrant:v1.16.2
     volumes: ["qdrant:/qdrant/storage"]
+  embeddings:
+    image: ghcr.io/ggml-org/llama.cpp:server-b11669@sha256:8ffe0d28ff5261cc2f78ca1f67db1515bc2529b904a3c25f5b24f4cedfc3411d
+    command: ["-m", "/models/qwen3-embedding-0.6b-q8_0.gguf", "--alias", "qwen3-embedding-0.6b", "--embedding", "--pooling", "last", "--host", "0.0.0.0", "--port", "8080", "-ngl", "0", "--device", "none", "-t", "4", "-tb", "4", "-c", "4096", "-b", "4096", "-ub", "256", "-np", "1"]
+    volumes:
+      - type: bind
+        source: ./data/models/qwen3-embedding-0.6b-q8_0.gguf
+        target: /models/qwen3-embedding-0.6b-q8_0.gguf
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 2g
+    cpus: 4
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    restart: unless-stopped
   ocr:
     build: ./services/ocr
     init: true
@@ -52,6 +71,8 @@ services:
       OCR_URL: "${OCR_URL-http://ocr:8000}"
     ports: ["127.0.0.1:8000:8000"]
     depends_on:
+      embeddings:
+        condition: service_healthy
       ocr:
         condition: service_healthy
       qdrant:

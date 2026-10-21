@@ -54,13 +54,14 @@ def request_embeddings(body: EmbeddingRequest, client=None):
     try:
         if owned:
             client = httpx.Client(timeout=180, follow_redirects=False)
+        separate = os.getenv('EMBED_BASE_URL', '').strip()
         response = client.post(
-            os.getenv('LMSTUDIO_BASE_URL', 'http://host.docker.internal:1234/v1').rstrip('/') + '/embeddings',
-            headers={'Authorization': 'Bearer ' + os.getenv('LMSTUDIO_API_KEY', 'lm-studio')},
+            (separate or os.getenv('LMSTUDIO_BASE_URL', 'http://host.docker.internal:1234/v1')).rstrip('/') + '/embeddings',
+            headers={'Authorization': 'Bearer ' + (os.getenv('EMBED_API_KEY', 'local-embeddings') if separate else os.getenv('LMSTUDIO_API_KEY', 'lm-studio'))},
             json={'model': model, 'input': texts, 'encoding_format': 'float'},
         )
         if response.status_code in (400, 413, 422):
-            raise ApplicationError(422, 'LM Studio rejected the input; check text length and model context')
+            raise ApplicationError(422, 'Embedding service rejected the input; check text length and model context')
         response.raise_for_status()
         result = UpstreamEmbeddings.model_validate(response.json())
         rows = sorted(result.data, key=lambda row: row.index)
@@ -79,7 +80,7 @@ def request_embeddings(body: EmbeddingRequest, client=None):
         raise
     except (httpx.HTTPError, ValidationError, ValueError, OverflowError, struct.error):
         # Do not return upstream errors: they can contain private input or credentials.
-        raise ApplicationError(503, 'Embeddings unavailable; check LM Studio and EMBED_MODEL') from None
+        raise ApplicationError(503, 'Embeddings unavailable; check EMBED_BASE_URL and EMBED_MODEL') from None
     finally:
         if owned and client is not None:
             client.close()

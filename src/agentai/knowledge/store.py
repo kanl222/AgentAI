@@ -6,17 +6,17 @@ from threading import RLock
 from qdrant_client import QdrantClient, models
 from .scoping import scope_records
 from .heads import IndexHeads
-from .text import tokenize
+from .text import tokenize, heading_in_question
 from .cache import RetrievalCache
 from .publication import publish_generation
 from ..settings import RetrievalSettings
 
 class Store:
-    def __init__(self, embeddings, client=None, index_heads=None):
+    def __init__(self, embeddings, client=None, index_heads=None, collection=None):
         self.embeddings = embeddings
         self.client = client or QdrantClient(url=os.getenv('QDRANT_URL','http://qdrant:6333'))
         self.lock = RLock()
-        self.collection = 'agentai'
+        self.collection = collection or os.getenv('QDRANT_COLLECTION', 'agentai')
         self.heads = index_heads or IndexHeads()
         self.settings = RetrievalSettings.from_env()
         self.cache = RetrievalCache(self.settings.corpus_entries, self.settings.corpus_ttl)
@@ -102,7 +102,11 @@ class Store:
         start = max(0,index+max(-2,min(100,offset)))
         return same[start:start+max(1,min(6,limit))]
 
-    def search(self, query, sources):
+    def document_catalog(self, query, sources):
+        from .catalog import describe_documents
+        return describe_documents([point.payload for point in self.corpus(sources)], query)
+
+    def search(self, query, sources, *, documents=None):
         original_query = query
         aliases = json.loads(os.getenv('SEARCH_ALIASES','{}'))
         additions = [term for key,values in aliases.items() if key.lower() in query.lower() for term in values if isinstance(term,str)]
@@ -116,6 +120,11 @@ class Store:
             scoped, targeted = scope_records([p.payload for p in corpus], original_query)
             allowed_ids = {row['id'] for row in scoped}
             corpus = [p for p in corpus if p.payload['id'] in allowed_ids]
+            if documents is not None:
+                from .scoping import document_key
+                keys = {tuple(key) for key in documents}
+                corpus = [p for p in corpus if document_key(p.payload) in keys]
+                allowed_ids = {p.payload['id'] for p in corpus}
             if not corpus:
                 return []
             active_filter = self.acl(sources)
@@ -142,7 +151,8 @@ class Store:
             if 3 <= len(query_terms) <= 16:
                 phrase = ' '.join(query_terms)
                 for point in corpus:
-                    if phrase in ' '.join(tokenize(point.payload['text'])):
+                    if (phrase in ' '.join(tokenize(point.payload['text']))
+                            or heading_in_question(point.payload['text'], original_query)):
                         fused[point.id] = fused.get(point.id,0)+1
                         records[point.id] = point.payload
             return [records[k] for k in sorted(fused,key=fused.get,reverse=True)[:self.settings.top_k]]
