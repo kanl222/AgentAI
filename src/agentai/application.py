@@ -24,8 +24,8 @@ class Application:
     request_embeddings: Callable
     capacity: object
 
+    @require('reader')
     def chat(self, body, user):
-        require(user, 'reader')
         if not self.capacity.acquire(blocking=False):
             raise ApplicationError(429, 'One active operation allowed')
         try:
@@ -44,8 +44,8 @@ class Application:
     def index_version(self, version, user, progress=None):
         return index_version(version, user, progress, archive=self.archive, services=self.services)
 
+    @require('reader')
     def queue_chat(self, body, user):
-        require(user, 'reader')
         memory = Conversations(self.database())
         if body.conversation_id:
             memory.get(str(body.conversation_id), user)

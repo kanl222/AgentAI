@@ -13,32 +13,29 @@ def create_router(application):
         return application.authenticate(authorization)
 
     @router.post('/chat')
-    def chat(body: Chat,p=Depends(user)):
-        return application.chat(body,p)
-
+    @require('reader')
+    def chat(body: Chat, p=Depends(user)):
+        return application.chat(body, p)
 
     @router.post('/conversations')
+    @require('reader')
     def create_conversation(p=Depends(user)):
-        require(p,'reader')
-        return {'id':Conversations(application.database()).create(p)}
-
+        return {'id': Conversations(application.database()).create(p)}
 
     @router.get('/conversations')
+    @require('reader')
     def list_conversations(p=Depends(user)):
-        require(p,'reader')
-        return {'conversations':Conversations(application.database()).list(p)}
-
+        return {'conversations': Conversations(application.database()).list(p)}
 
     @router.get('/conversations/{identity}')
+    @require('reader')
     def get_conversation(identity: uuid.UUID, p=Depends(user)):
-        require(p,'reader')
-        return Conversations(application.database()).get(str(identity),p,display=True)
-
+        return Conversations(application.database()).get(str(identity), p, display=True)
 
     @router.delete('/conversations/{identity}')
+    @require('reader')
     def delete_conversation(identity: uuid.UUID, p=Depends(user)):
-        require(p,'reader')
-        Conversations(application.database()).delete(str(identity),p)
-        return {'deleted':True}
+        Conversations(application.database()).delete(str(identity), p)
+        return {'deleted': True}
 
     return router

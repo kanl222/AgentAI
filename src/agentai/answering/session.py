@@ -51,15 +51,15 @@ class AnswerSession:
             r'предыдущ\w*|вышеуказан\w*|упомянут\w*)\b', self.question.lower())
             or re.fullmatch(r'\s*(?:расскажи |объясни |покажи )?(?:подробнее|продолжи|продолжай)'
                             r'[\s.!?]*', self.question.lower()))
-        if re.search(r'\b(?:другая тема|сменим тему|новый вопрос|теперь о другом)\b',self.question.lower()):
+        if re.search(r'\b(?:другая тема|сменим тему|новый вопрос|теперь о другом)\b', self.question.lower()):
             followup = False
         if followup and self.history and not any(explicit_targets(self.question)):
             previous = self.history[-1]
             self.pinned_documents.update(tuple(key) for key in previous.get('context', {}).get('selected', []))
-            targets = ' '.join(key[1].rsplit('/',1)[-1].split('@',1)[0]
+            targets = ' '.join(key[1].rsplit('/', 1)[-1].split('@', 1)[0]
                                for key in sorted(self.pinned_documents))[:400]
             if self.pinned_documents:
-                self.context_query = (self.question[:1000]+' '+previous['question'][:500]+' '+targets)[:2000]
+                self.context_query = (self.question[:1000] + ' ' + previous['question'][:500] + ' ' + targets)[:2000]
 
     def remember(self, rows):
         result = []
@@ -70,8 +70,8 @@ class AnswerSession:
             result.append(entry)
         return result
 
+    @require('reader')
     def search(self, query):
-        require(self.user, 'reader')
         rows = self.store.search(query[:2000], self.user['sources'])
         if self.scope_ready:
             rows = [row for row in rows if document_key(row) in self.pinned_documents]
@@ -82,8 +82,8 @@ class AnswerSession:
             self.focus = []
         return rows
 
+    @require('reader')
     def read_source(self, chunk_id, offset=-1, limit=3):
-        require(self.user, 'reader')
         if chunk_id not in self.evidence:
             return None
         rows = self.remember(self.store.read_source(chunk_id, self.user['sources'], offset, max(1, min(6, limit))))
@@ -125,7 +125,7 @@ class AnswerSession:
     def missing_target(self):
         files, identifiers = explicit_targets(self.question)
         if not self.rows and (files or identifiers):
-            return 'Документ или символ '+', '.join(files or identifiers)+' не найден среди доступных источников. Уточните название или загрузите документ.'
+            return 'Документ или символ ' + ', '.join(files or identifiers) + ' не найден среди доступных источников. Уточните название или загрузите документ.'
         return ''
 
     def direct_quote(self):
@@ -139,6 +139,6 @@ class AnswerSession:
             row['id'] == hit['id'] or (row.get('document_id') and row.get('document_id') == hit.get('document_id')
             and row.get('version') == hit.get('version') and row['source'] == hit['source']) for hit in titled)]
         self.evidence = {row['id']: row for row in selected}
-        return 'Найден документ. Фрагмент исходного текста:\n\n'+'\n\n'.join(
-            '\n'.join('> '+line for line in row['text'].splitlines())+'\n\nИсточник: '+row['citation']
+        return 'Найден документ. Фрагмент исходного текста:\n\n' + '\n\n'.join(
+            '\n'.join('> ' + line for line in row['text'].splitlines()) + '\n\nИсточник: ' + row['citation']
             for row in selected)
