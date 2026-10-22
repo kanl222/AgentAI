@@ -52,7 +52,7 @@ def render_citations(text, rows):
                 return cite(locations[candidate]) + value[len(candidate):]
             issues.add('Ответ содержит неподтверждённый адрес источника.')
             return '[источник не подтверждён]' + value[len(candidate):]
-        part = re.sub(r'(?:document|gitlab):[^\s<>"\x60\[\]()]+', location, part)
+        part = re.sub(r'(?:document|gitlab|attachment):[^\s<>"\x60\[\]()]+', location, part)
         def url(match):
             value = match.group(0)
             if value.rstrip('.,;') in allowed_urls:

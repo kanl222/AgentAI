@@ -4,6 +4,7 @@ import os
 import threading
 import logging
 import psycopg
+from ..errors import ApplicationError
 from ..adapters.postgres import principal
 
 class Worker:
@@ -32,7 +33,10 @@ class Worker:
                 if job['kind']=='index':
                     with self.jobs.database.connect() as db:
                         db.execute("UPDATE versions SET state='failed' WHERE version=%s AND state='pending'", (job['payload']['version'],))
-                self.jobs.finish(job['id'],error='Операция не выполнена. Проверьте права, файл и доступность сервисов; затем повторите задание.')
+                detail = (str(error.detail) if job['kind'] == 'chat' and job['payload'].get('attachments')
+                          and isinstance(error, ApplicationError) and error.status_code in (413, 422)
+                          else 'Операция не выполнена. Проверьте права, файл и доступность сервисов; затем повторите задание.')
+                self.jobs.finish(job['id'],error=detail)
             return True
         finally:
             self.capacity.release()

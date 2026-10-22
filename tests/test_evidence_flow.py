@@ -71,10 +71,12 @@ def test_context_budget_does_not_silently_drop_later_hits():
             content = next(m.content for m in messages if isinstance(m, ToolMessage))
             entries = json.loads(content)
             assert len(content) <= 12000
-            assert len(entries) == 6
-            assert all(f'RELEVANT_{i}' in entries[i]['text'] for i in range(6))
-            assert all(entry.get('text_truncated') for entry in entries)
-            return AIMessage(content='Все шесть фрагментов доступны')
+            assert 0 < len(entries) < 6
+            assert all(entry['text'] == f'RELEVANT_{i} ' + 'текст ' * 560 for i, entry in enumerate(entries))
+            assert not any(entry.get('text_truncated') for entry in entries)
+            assert entries[0]['context_omitted_count'] == 6-len(entries)
+            assert entries[0]['next_chunk_id'] == str(len(entries))
+            return AIMessage(content='Целые фрагменты и указатель продолжения доступны')
 
     answer('Найди сведения', USER, Store(), Inspects())
 

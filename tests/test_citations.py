@@ -60,7 +60,7 @@ def test_generated_document_location_cannot_claim_an_unretrieved_source():
     assert any('неподтвержд' in warning.lower() for warning in result['warnings'])
 
 
-def test_missing_citation_gets_one_bounded_correction_with_same_evidence():
+def test_uncited_answer_is_not_regenerated_only_to_force_a_source():
     class OmitsThenCites(Model):
         calls = 0
 
@@ -71,9 +71,14 @@ def test_missing_citation_gets_one_bounded_correction_with_same_evidence():
 
     model = OmitsThenCites('')
     result = answer('Назови контроллер', USER, Store(), model)
-    assert model.calls == 2
-    assert result['steps'] == 2
-    assert result['used_sources'][0]['citation'] == CITATION
+    assert model.calls == 1
+    assert result['steps'] == 1
+    assert result['used_sources'] == []
+    assert result['validation']['passed']
+    assert not result['validation']['correction_attempted']
+    assert 'Найденные материалы' not in result['answer']
+    assert CITATION not in result['answer']
+    assert result['sources'][0]['citation'] == CITATION
 
 
 def test_correction_respects_step_budget():
@@ -100,7 +105,7 @@ def test_failed_optional_correction_keeps_original_answer_and_reports_it():
             self.calls += 1
             if self.calls > 1:
                 raise RuntimeError('model unavailable')
-            return AIMessage(content='DefaultController')
+            return AIMessage(content='DefaultController [S99]')
 
     result = answer('Назови контроллер', USER, Store(), FailsCorrection(''))
     assert result['answer'].startswith('DefaultController')

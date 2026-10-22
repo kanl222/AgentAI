@@ -45,9 +45,11 @@
       <div class="compose-area">
         <div class="notice" id="notice" role="alert" hidden><span id="notice-text"></span><button class="icon-button" id="dismiss-notice" aria-label="Скрыть уведомление"><span data-icon="close"></span></button></div>
         <form class="composer" id="chat-form">
+          <input id="attachment-input" type="file" multiple hidden accept=".pdf,.docx,.txt,.md,.py,.sql,.js,.ts,.tsx,.jsx,.json,.yaml,.yml,.xml,.html,.css,.cs,.java,.php,.go,.rs,.sh,.toml,.png,.jpg,.jpeg,.webp,.tif,.tiff">
+          <div id="attachments" class="attachments" aria-label="Вложения" hidden></div>
           <label class="sr-only" for="question">Сообщение AgentAI</label>
           <textarea id="question" rows="1" maxlength="12000" placeholder="Спросите что-нибудь…"></textarea>
-          <div class="composer-bottom"><span class="composer-context"><span data-icon="book"></span>Поиск по доступным источникам</span><div class="composer-actions"><span id="character-count" hidden></span><button class="send-button" id="send" type="submit" aria-label="Отправить сообщение" title="Отправить (Enter)"><span data-icon="arrow-up"></span></button></div></div>
+          <div class="composer-bottom"><div class="composer-tools"><button id="attach-file" type="button" class="icon-button" aria-label="Прикрепить файл" title="Прикрепить файл · до 3 файлов, всего 15 МБ"><span data-icon="paperclip"></span></button><span class="composer-context" id="composer-context">Поиск по доступным источникам</span></div><div class="composer-actions"><span id="character-count" hidden></span><button class="send-button" id="send" type="submit" aria-label="Отправить сообщение" title="Отправить (Enter)"><span data-icon="arrow-up"></span></button></div></div>
         </form>
         <p class="composer-note">Проверяйте важные выводы по источникам.<span>Enter — отправить · Shift Enter — новая строка</span></p>
       </div>
@@ -62,10 +64,10 @@
       <div class="dialog-heading"><span class="brand-symbol" aria-hidden="true">a</span><button type="button" class="icon-button" id="close-connection" aria-label="Закрыть"><span data-icon="close"></span></button></div>
       <h2>Подключиться к AgentAI</h2><p>Используйте личный ключ доступа к вашему серверу.</p>
       <label for="access-key">Ключ доступа</label><input id="access-key" type="password" required autocomplete="off" spellcheck="false" placeholder="Введите ключ">
-      <p class="field-note">Ключ остаётся в памяти страницы. После обновления потребуется подключиться заново.</p>
+      <p class="field-note">Вход сохраняется на 30 дней. После обновления страницы диалог и черновик восстановятся.</p>
       <p id="connection-error" class="field-error" role="alert" hidden></p>
       <button class="primary-button" id="connect-button">Подключиться</button>
-      <button class="text-button" id="disconnect" type="button" hidden>Отключиться</button>
+      <button class="text-button" id="disconnect" type="button" hidden>Выйти на этом устройстве</button>
     </form>
   </dialog>
   <dialog id="delete-dialog" class="connection-dialog">

@@ -90,6 +90,7 @@ services:
     restart: unless-stopped
   chat:
     build: ./web/chat
+    volumes: ["chat-sessions:/app/data"]
     ports: ["127.0.0.1:3000:3000"]
     environment:
       AGENTAI_URL: http://api:8000
@@ -114,6 +115,7 @@ services:
       ENABLE_SIGNUP: "true"
     depends_on: [api]
 volumes:
+  chat-sessions:
   postgres:
   documents:
   qdrant:

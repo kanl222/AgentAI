@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { once } from 'node:events';
+import { randomBytes } from 'node:crypto';
 import { createChatServer } from '../server.mjs';
 
 async function listen(server) {
@@ -149,4 +150,39 @@ test('refuses invalid upstreams and API paths that could become an open proxy', 
   let called=false;const {url}=await fixture(t,(_,res)=>{called=true;res.end();});
   const response=await fetch(url+'/api//example.com/secret');
   assert.equal(response.status,400);assert.equal(called,false);
+});
+
+test('remembers validated sessions across server restart and proxies without exposing keys',async t=>{
+  let revoked=false,observed;
+  const key=randomBytes(32);
+  const {url,origin,chat}=await fixture(t,(req,res)=>{
+    observed={authorization:req.headers.authorization,cookie:req.headers.cookie};
+    if(revoked || req.headers.authorization!=='Bearer ui-test-key'){res.writeHead(401);res.end('{}');return;}
+    res.setHeader('Content-Type','application/json');res.end(JSON.stringify({name:'alice',roles:['reader'],sources:['docs']}));
+  },{sessionKey:key});
+  assert.equal((await fetch(url+'/auth/session')).status,401);
+  const login=await fetch(url+'/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:'ui-test-key'})});
+  assert.equal(login.status,200); const cookie=login.headers.get('set-cookie').split(';')[0];
+  assert(!cookie.includes('ui-test-key')); assert.match(login.headers.get('set-cookie'),/HttpOnly; SameSite=Strict; Max-Age=2592000/);
+  const logged=await login.json();assert.equal(logged.user.name,'alice'); assert(!JSON.stringify(logged).includes('ui-test-key'));
+  await close(chat);
+  const restarted=createChatServer({agentUrl:origin,sessionKey:key});const again=await listen(restarted);t.after(()=>close(restarted));
+  const restored=await fetch(again+'/auth/session',{headers:{Cookie:cookie}});
+  assert.equal(restored.status,200); assert.deepEqual(await restored.json(),logged);
+  assert.equal((await fetch(again+'/api/conversations',{headers:{Cookie:cookie}})).status,200);
+  assert.deepEqual(observed,{authorization:'Bearer ui-test-key',cookie:undefined});
+  const logout=await fetch(again+'/auth/session',{method:'DELETE',headers:{Cookie:cookie}});
+  assert.equal(logout.status,204);assert.match(logout.headers.get('set-cookie'),/Max-Age=0/);
+  revoked=true;
+  const rejected=await fetch(again+'/auth/session',{headers:{Cookie:cookie}});
+  assert.equal(rejected.status,401);assert.match(rejected.headers.get('set-cookie'),/Max-Age=0/);
+});
+test('session endpoints reject cross-site requests and malformed login data',async t=>{
+  let called=false; const {url}=await fixture(t,(_,res)=>{called=true;res.end('{}');});
+  const rejected=await fetch(url+'/auth/session',{method:'POST',headers:{Origin:'https://other.example','Content-Type':'application/json'},body:'{}'});
+  assert.equal(rejected.status,403);assert.equal(called,false);
+  assert.equal((await fetch(url+'/api/jobs/chat',{method:'POST',headers:{Origin:'https://other.example'},body:'{}'})).status,403);
+  assert.equal((await fetch(url+'/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'broken'})).status,400);
+  assert.equal((await fetch(url+'/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:'x'.repeat(5000)})})).status,413);
+  assert.equal(called,false);
 });

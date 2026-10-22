@@ -34,6 +34,7 @@ class AnswerSession:
     references: dict[str, str] = field(default_factory=dict, init=False)
     rows: list[Evidence] = field(default_factory=list, init=False)
     focus: list[str] = field(default_factory=list, init=False)
+    anchors: list[str] = field(default_factory=list, init=False)
     pinned_documents: set = field(default_factory=set, init=False)
     scope_ready: bool = field(default=False, init=False)
     query: str = field(init=False)
@@ -80,6 +81,7 @@ class AnswerSession:
             self.query = query[:2000]
             self.rows = merge_evidence(rows, self.rows)
             self.focus = []
+            self.anchors = []
         return rows
 
     @require('reader')
@@ -92,6 +94,32 @@ class AnswerSession:
             self.focus = [row['id'] for row in rows]
         return rows
 
+    def expand_neighbors(self):
+        """Expand at most three hit files into ordered batches of six passages."""
+        if not hasattr(self.store, 'read_source'):
+            return
+        expanded, seen = [], set()
+        self.anchors = []
+        for anchor in self.rows:
+            key = document_key(anchor)
+            if key in seen:
+                continue
+            seen.add(key)
+            self.anchors.append(anchor['id'])
+            neighbors = self.store.read_source(anchor['id'], self.user['sources'], -1, 6)
+            # Do not join different files or document versions into one batch.
+            neighbors = [row for row in neighbors if document_key(row) == key
+                         and row.get('version') == anchor.get('version')
+                         and row.get('document_id') == anchor.get('document_id')]
+            expanded.extend(self.remember(neighbors or [anchor]))
+            if len(seen) == 3:
+                break
+        groups = {}
+        for row in merge_evidence(expanded, self.rows):
+            groups.setdefault(document_key(row), []).append(row)
+        self.rows = [row for group in groups.values() for row in sorted(group, key=lambda row:
+                     [int(n) if n.isdigit() else n for n in re.split(r'(\d+)', row['citation'])])]
+
     def retrieve(self):
         try:
             self.search(self.query)
@@ -100,11 +128,6 @@ class AnswerSession:
                 # global search or changes the current user's search question.
                 contextual = self.remember(self.store.search(self.context_query, self.user['sources']))
                 self.rows = merge_evidence(contextual, self.rows)
-            if hasattr(self.store, 'read_source') and self.rows:
-                first = self.rows[0]
-                neighbors = self.remember(self.store.read_source(first['id'], self.user['sources'], -1, 3))
-                known = {row['id'] for row in self.rows}
-                self.rows.extend(row for row in neighbors if row['id'] not in known)
             if any(explicit_targets(self.question)):
                 self.pinned_documents.update(document_key(row) for row in self.rows)
                 self.scope_ready = True
@@ -113,7 +136,7 @@ class AnswerSession:
 
     def packed(self, budget=None):
         entries = pack_evidence(self.rows, budget=budget if budget is not None else
-                                RetrievalSettings.from_env().context_chars, focus=self.focus)
+                                RetrievalSettings.from_env().context_chars, focus=self.focus, anchors=self.anchors)
         for entry in entries:
             # Source coordinates are useful, immutable storage addresses are not
             # model-authored links. The backend resolves refs to exact versions.

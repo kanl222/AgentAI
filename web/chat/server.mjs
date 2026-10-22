@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { Transform } from 'node:stream';
 import { codeLanguages } from './public/highlight-languages.js';
+import { createSessions, cookieHeader, sessionScope } from './session.mjs';
 
 const publicDirectory = new URL('./public/', import.meta.url);
 const files = new Map([
@@ -11,6 +12,7 @@ const files = new Map([
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/chat.css', ['chat.css', 'text/css; charset=utf-8']],
   ['/chat.js', ['chat.js', 'text/javascript; charset=utf-8']],
+  ['/chat-state.js', ['chat-state.js', 'text/javascript; charset=utf-8']],
   ['/chat-render.js', ['chat-render.js', 'text/javascript; charset=utf-8']],
   ['/theme.js', ['theme.js', 'text/javascript; charset=utf-8']],
   ['/highlighter.js', ['highlighter.js', 'text/javascript; charset=utf-8']],
@@ -56,7 +58,9 @@ export function createChatServer({
   agentUrl = process.env.AGENTAI_URL || 'http://127.0.0.1:8000',
   maxBodyBytes = 28_000_000,
   proxyTimeoutMs = 600_000,
+  sessionKey,
 } = {}) {
+  const sessions = createSessions(sessionKey);
   const backend = backendOrigin(agentUrl);
   if (!Number.isSafeInteger(maxBodyBytes) || maxBodyBytes < 1 ||
       !Number.isSafeInteger(proxyTimeoutMs) || proxyTimeoutMs < 1) {
@@ -83,6 +87,10 @@ export function createChatServer({
     const headers = {};
     for (const name of forwardedHeaders) {
       if (request.headers[name] !== undefined) headers[name] = request.headers[name];
+    }
+    if (!headers.authorization) {
+      const token = sessions.read(request.headers.cookie);
+      if (token) headers.authorization = 'Bearer ' + token;
     }
     let bytes = 0;
     const limiter = new Transform({
@@ -117,7 +125,7 @@ export function createChatServer({
       const excluded = new Set(hopHeaders);
       for (const name of String(incoming.headers.connection || '').split(',')) excluded.add(name.trim().toLowerCase());
       for (const [name, value] of Object.entries(incoming.headers)) {
-        if (!excluded.has(name) && value !== undefined) response.setHeader(name, value);
+        if (!excluded.has(name) && name !== 'set-cookie' && value !== undefined) response.setHeader(name, value);
       }
       // JSON, authorization failures and PDF bytes retain the backend's status.
       response.statusCode = incoming.statusCode || 502;
@@ -134,11 +142,54 @@ export function createChatServer({
     request.pipe(limiter).pipe(upstream);
   }
 
+  async function session(request, response) {
+    const secure = !!request.socket.encrypted;
+    if (request.method === 'DELETE') {
+      response.setHeader('Set-Cookie', cookieHeader('', secure));
+      response.writeHead(204); response.end(); return;
+    }
+    let token;
+    if (request.method === 'POST') {
+      if (!String(request.headers['content-type']).startsWith('application/json')) { problem(response, 415, 'Ожидается JSON.'); return; }
+      let content = '', bytes = 0;
+      for await (const part of request) {
+        bytes += part.length;
+        if (bytes > 4096) { problem(response, 413, 'Ключ слишком длинный.'); return; }
+        content += part.toString();
+      }
+      try { token = JSON.parse(content).token; } catch { problem(response, 400, 'Некорректные данные подключения.'); return; }
+      if (typeof token !== 'string' || !token.trim() || token.length > 2048 || /[\r\n]/.test(token)) { problem(response, 400, 'Введите ключ доступа.'); return; }
+      token = token.trim();
+    } else if (request.method === 'GET') token = sessions.read(request.headers.cookie);
+    else { problem(response, 405, 'Метод не поддерживается.'); return; }
+    if (!token) { problem(response, 401, 'Подключитесь к AgentAI.'); return; }
+    try {
+      const upstream = await fetch(new URL('/session', backend), {
+        headers: { Authorization: 'Bearer ' + token }, signal: AbortSignal.timeout(10_000), redirect: 'error',
+      });
+      if (!upstream.ok) {
+        if ([401,403].includes(upstream.status)) response.setHeader('Set-Cookie', cookieHeader('', secure));
+        problem(response, [401,403].includes(upstream.status) ? upstream.status : 503, 'Не удалось подтвердить подключение к AgentAI.'); return;
+      }
+      const user = await upstream.json();
+      if (request.method === 'POST') response.setHeader('Set-Cookie', cookieHeader(sessions.issue(token), secure));
+      response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      response.end(JSON.stringify({ user, scope: sessionScope(token) }));
+    } catch { problem(response, 503, 'AgentAI недоступен. Проверьте сервер и повторите подключение.'); }
+  }
+
   const server = http.createServer({ maxHeaderSize: 16_384, requestTimeout: 650_000 }, (request, response) => {
     securityHeaders(response);
+    const origin = request.headers.origin;
+    if ((request.url?.startsWith('/api/') || request.url === '/auth/session') &&
+        (request.headers['sec-fetch-site'] === 'cross-site' ||
+         (origin && origin !== `${request.socket.encrypted ? 'https' : 'http'}://${request.headers.host}`))) {
+      problem(response, 403, 'Запрос с другого сайта запрещён.'); return;
+    }
     if (!request.url?.startsWith('/') || request.url.startsWith('//')) {
       problem(response, 400, 'Некорректный адрес.'); return;
     }
+    if (request.url === '/auth/session') { session(request, response).catch(() => problem(response, 400, 'Подключение прервано.')); return; }
     if (request.url.startsWith('/api/')) { proxy(request, response); return; }
     if (!['GET', 'HEAD'].includes(request.method)) {
       response.setHeader('Allow', 'GET, HEAD'); problem(response, 405, 'Метод не поддерживается.'); return;

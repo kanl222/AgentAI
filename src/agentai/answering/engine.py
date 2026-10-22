@@ -17,7 +17,7 @@ from .code_checks import normalize_sql_aliases, normalize_sort_contract, normali
 from .result import finalize
 from .skill_selection import select_skill
 from .routing import expand_candidates
-from .extractive import evidence_answer, definition_answer
+from .extractive import evidence_answer
 
 
 class State(TypedDict):
@@ -43,6 +43,7 @@ def answer(question, user, store, model, max_steps=4, history=None):
     history = history or []
     session = AnswerSession(question, user, store, history)
     loaded_skills = {}
+    presented_code = set()
     catalog = skills()
 
     @tool
@@ -84,10 +85,10 @@ def answer(question, user, store, model, max_steps=4, history=None):
 
     def retrieve(state):
         session.retrieve()
-        direct = session.direct_quote() or session.missing_target() or definition_answer(question, session.rows)
+        direct = session.direct_quote() or session.missing_target()
         if not direct:
             expand_candidates(session, model)
-            direct = definition_answer(question, session.rows)
+            session.expand_neighbors()
         name = select_skill(question, session.rows)
         if name in catalog:
             loaded_skills[name] = catalog[name][1][:4000]
@@ -127,6 +128,19 @@ def answer(question, user, store, model, max_steps=4, history=None):
         if last_ai >= 4 and any(c['name'] not in {'search', 'load_skill', 'read_source'} for c in graph_history[last_ai].tool_calls):
             messages += graph_history[last_ai:]
         message = bound.invoke(messages)
+        presented_code.update(row['id'] for row in session.packed())
+        if (not message.tool_calls and 'code' in loaded_skills
+                and state['steps'] < max_steps-2 and session.rows):
+            # Small local models may answer before requesting omitted code. Keep
+            # scanning the primary file, with a final generation step reserved.
+            from ..knowledge.scoping import document_key
+            primary = document_key(session.rows[0])
+            unread = next((row for row in session.rows if row['id'] not in presented_code
+                           and document_key(row) == primary), None)
+            if unread:
+                message = AIMessage(content='', tool_calls=[{
+                    'id': f'backend-code-continuation-{state["steps"]+1}', 'name': 'read_source',
+                    'args': {'chunk_id': unread['id'], 'offset': 0, 'limit': 6}}])
         if not message.tool_calls:
             normalized = normalize_sql_aliases(str(message.content), session.rows, question)
             normalized = normalize_sort_contract(normalized, session.rows, question)
@@ -137,18 +151,20 @@ def answer(question, user, store, model, max_steps=4, history=None):
                 and steps < max_steps and message.response_metadata.get('finish_reason') != 'length'):
             _, cited, issues = render_citations(str(message.content), list(session.evidence.values()))
             content_issues = inspect_answer(question, str(message.content), list(session.evidence.values()), cited=cited)
-            if not cited or issues or content_issues:
+            if issues or content_issues:
                 repaired = True
                 steps += 1
                 correction = HumanMessage(content=(
                     'Исправь ошибки проверки в предыдущем ответе. '
                     'Используй только существующие метки ref из переданных результатов '
-                    'в формате [S1] с латинской S. Не создавай адресов и новых фактов. '
+                    'в формате [S1] с латинской S для подтверждённых ими утверждений. '
+                    'Ответ можно дополнять общими знаниями и примерами с явными допущениями; '
+                    'отделяй их от сведений источников. Не создавай адресов источников. '
                     'Исправь замечания к содержанию, алгоритму и тестам в объёме исходного вопроса. '
                     'Верни только окончательный ответ без пересказа ошибочных вариантов и хода исправления. '
                     'Метки источников поставь отдельным абзацем после кода. '
                     'Верни полный ответ со ссылками рядом с подтверждаемыми утверждениями.\n'
-                    'Замечания проверки. Используй полные актуальные фрагменты из backend-retrieval; '
+                    'Замечания проверки. Используй полные фрагменты из backend-retrieval; '
                     'замечания не заменяют результаты поиска:\n' + json.dumps({
                         'issues': [{'code': issue['code'], 'message': issue['message']} for issue in content_issues]
                                   or [{'message': 'Отсутствует точная ссылка или есть неподтверждённый адрес.'}]}, ensure_ascii=False)))

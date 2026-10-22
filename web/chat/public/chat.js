@@ -1,13 +1,16 @@
+import { readView, writeView, historyGroups } from './chat-state.js';
 import { renderMarkdown, sourceName, sourcePage } from './chat-render.js';
 
 const $ = id => document.getElementById(id);
+const viewStorage=(()=>{ try{return localStorage;}catch{return {getItem:()=>null,setItem:()=>{},removeItem:()=>{}};} })();
 const el = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
 const paths = {
+  paperclip:'m21 11-8 8a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8l8-8',
   plus:'M12 5v14M5 12h14', search:'m21 21-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
   folder:'M3 7V5a1 1 0 0 1 1-1h5l2 3h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z',
   'arrow-up-right':'M7 17 17 7M7 7h10v10', 'arrow-up':'M12 19V5m-6 6 6-6 6 6',
   user:'M20 21v-2a5 5 0 0 0-5-5H9a5 5 0 0 0-5 5v2M16 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
-  settings:'m9 3-1 3-3 1-2 3 2 2-1 3 3 2 1 3h4l1-3 3-1 2-3-2-2 1-3-3-2-1-3ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
+  settings:'M19.39 8.94L21.88 10.44L21.88 13.56L19.39 15.06L20.09 17.88L17.88 20.09L15.06 19.39L13.56 21.88L10.44 21.88L8.94 19.39L6.12 20.09L3.91 17.88L4.61 15.06L2.12 13.56L2.12 10.44L4.61 8.94L3.91 6.12L6.12 3.91L8.94 4.61L10.44 2.12L13.56 2.12L15.06 4.61L17.88 3.91L20.09 6.12ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
   menu:'M4 6h16M4 12h16M4 18h16', close:'m6 6 12 12M6 18 18 6',
   trash:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
   spark:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5ZM20 2v4M18 4h4',
@@ -24,7 +27,23 @@ function icon(name) {
   const path = document.createElementNS(svg.namespaceURI,'path'); path.setAttribute('d',paths[name] || paths.file); svg.append(path); return svg;
 }
 document.querySelectorAll('[data-icon]').forEach(n => n.replaceChildren(icon(n.dataset.icon)));
-const state = {token:'',epoch:0,view:0,identity:null,conversations:[],pending:new Map(),cache:new Map(),submitting:false,timer:null,documents:[],panel:0};
+const state = {connected:false,scope:'',drafts:{},epoch:0,view:0,identity:null,conversations:[],pending:new Map(),cache:new Map(),submitting:false,timer:null,documents:[],panel:0};
+let attachments = [];
+function renderAttachments() {
+  const list=$('attachments'); list.replaceChildren(); list.hidden=!attachments.length;
+  for (const file of attachments) {
+    const chip=el('div',undefined,'attachment-chip');
+    const name=el('span',file.name); name.title=file.name;
+    const remove=button('',()=>{ if (state.submitting) return; attachments=attachments.filter(f=>f!==file); renderAttachments(); });
+    remove.setAttribute('aria-label','Убрать файл '+file.name); remove.append(icon('close')); remove.disabled=state.submitting;
+    chip.append(icon('file'),name,el('small',Math.max(1,Math.ceil(file.size/1024))+' КБ'),remove); list.append(chip);
+  }
+  $('composer-context').textContent=attachments.length?'Ответ по вложениям':'Поиск по доступным источникам'; updateSend();
+}
+function clearAttachments() { attachments=[]; $('attachment-input').value=''; renderAttachments(); }
+function encodeFile(file) {
+  return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=()=>resolve({filename:file.name,content_base64:String(reader.result).split(',')[1]}); reader.onerror=()=>reject(Error('Не удалось прочитать файл '+file.name)); reader.readAsDataURL(file); });
+}
 let previousFocus = null;
 const mobileSidebar=matchMedia('(max-width:700px)');
 function announce(text) { $('announcer').textContent = text; }
@@ -34,19 +53,26 @@ function displayError(error) { if (error.name !== 'AbortError') notice(error.mes
 async function api(path, options={}) {
   const epoch=state.epoch;
   let response;
-  try { response=await fetch('/api'+path,{...options,cache:'no-store',headers:{Authorization:'Bearer '+state.token,'Content-Type':'application/json',...options.headers}}); }
+  try { response=await fetch('/api'+path,{...options,cache:'no-store',credentials:'same-origin',headers:{'Content-Type':'application/json',...options.headers}}); }
   catch { throw new Error('Нет соединения с сервером. Проверьте подключение и повторите запрос.'); }
   if (epoch !== state.epoch) throw new DOMException('Подключение изменилось','AbortError');
   if (!response.ok) {
     const messages={401:'Ключ не принят. Проверьте его и подключитесь заново.',403:'У этого ключа нет доступа к операции.',404:'Диалог, документ или задание больше не доступны.',409:'Запрос уже выполняется. Отменить можно только запрос в очереди.',413:'Запрос слишком большой.',422:'Проверьте данные запроса.',429:'Очередь занята. Подождите и повторите отправку.',502:'Нет соединения с AgentAI. Проверьте сервер и повторите запрос.',504:'AgentAI не ответил вовремя. Повторите запрос.',503:'Сервис сейчас недоступен. Проверьте AgentAI и загруженные модели, затем повторите.'};
-    const error=new Error(messages[response.status] || 'Не удалось выполнить запрос (HTTP '+response.status+').');
-    error.status=response.status; throw error;
+    let detail; if ([413,422].includes(response.status)) { try { const data=await response.json(); if (typeof data.detail==='string') detail=data.detail; } catch {} }
+    const error=new Error(detail || messages[response.status] || 'Не удалось выполнить запрос (HTTP '+response.status+').');
+    error.status=response.status; if (response.status===401 && state.connected) { disconnect(); openConnection(); } throw error;
   }
   return response;
 }
 async function json(path, body, method='POST') { const epoch=state.epoch; const data=await (await api(path,{method,body:JSON.stringify(body)})).json(); if (epoch!==state.epoch) throw new DOMException('Подключение изменилось','AbortError'); return data; }
 function isCurrent(epoch, view) { return epoch === state.epoch && view === state.view; }
-function updateSend() { $('send').disabled=!$('question').value.trim() || state.submitting || state.pending.has(state.identity); }
+function updateSend() { $('send').disabled=(!$('question').value.trim() && !attachments.length) || state.submitting || state.pending.has(state.identity); $('attach-file').disabled=state.submitting; }
+function saveView() {
+  if (!state.connected || !state.scope) return;
+  state.drafts[state.identity || 'new']=$('question').value;
+  writeView(state.scope,{identity:state.identity,drafts:state.drafts,scroll:$('history').scrollTop},viewStorage);
+}
+function restoreDraft() { $('question').value=state.drafts[state.identity || 'new'] || ''; resizeInput(); }
 function resizeInput() { const q=$('question'); q.style.height='auto'; q.style.height=Math.min(q.scrollHeight,170)+'px'; $('character-count').hidden=q.value.length<10000; $('character-count').textContent=q.value.length.toLocaleString('ru')+' / 12 000'; updateSend(); }
 function scrollBottom() { $('timeline').scrollTop=$('timeline').scrollHeight; }
 function syncSidebar() {
@@ -62,39 +88,57 @@ mobileSidebar.addEventListener('change',syncSidebar);
 function setTitle(title='Новый диалог') { $('chat-title').textContent=title; document.title=title==='Новый диалог'?'AgentAI — чат':title+' — AgentAI'; $('delete-chat').hidden=!state.identity; }
 function openConnection() { $('connection-error').hidden=true; if (!$('connection-dialog').open) $('connection-dialog').showModal(); }
 function disconnect() {
-  state.epoch++; state.view++; state.panel++; clearTimeout(state.timer); state.token=''; state.identity=null; state.conversations=[]; state.pending.clear(); state.cache.clear(); state.documents=[]; state.submitting=false;
+  clearAttachments();
+  state.scope=''; state.drafts={};
+  state.epoch++; state.view++; state.panel++; clearTimeout(state.timer); state.connected=false; state.identity=null; state.conversations=[]; state.pending.clear(); state.cache.clear(); state.documents=[]; state.submitting=false;
   $('messages').replaceChildren(); $('welcome').hidden=false; $('question').value=''; $('history-search').value=''; $('access-key').value=''; $('account-name').textContent='Подключение'; $('account-detail').textContent='Личный ключ доступа'; $('disconnect').hidden=true;
   closePanel(); setTitle(); renderHistory(); connectedStatus('Не подключено'); notice(''); resizeInput();
 }
 function renderHistory() {
-  const query=$('history-search').value.trim().toLocaleLowerCase('ru');
-  const rows=state.conversations.filter(c=>c.title.toLocaleLowerCase('ru').includes(query));
-  $('history').replaceChildren(); $('history-count').textContent=state.conversations.length || '';
-  if (!rows.length) { $('history').append(el('p',!state.token?'Подключитесь, чтобы увидеть историю.':query?'Диалоги не найдены.':'Здесь появятся ваши диалоги.','history-empty')); return; }
-  for (const c of rows) {
-    const b=el('button',undefined,'history-item'+(state.identity===c.id?' active':'')); b.type='button'; b.dataset.conversationId=c.id; b.append(icon('message'),el('span',c.title)); b.title=c.title;
+  const query=$('history-search').value.trim(), history=$('history'), scroll=history.scrollTop;
+  const {groups,unnamed}=historyGroups(state.conversations,query);
+  history.replaceChildren(); $('history-count').textContent=state.conversations.length || '';
+  if (!groups.size && !unnamed.length) { history.append(el('p',!state.connected?'Подключитесь, чтобы увидеть историю.':query?'Диалоги не найдены.':'Здесь появятся ваши диалоги.','history-empty')); return; }
+  function item(c,parent) {
+    const b=el('button',undefined,'history-item'+(state.identity===c.id?' active':''));
+    b.type='button'; b.dataset.conversationId=c.id; b.title=c.title;
+    const content=el('span',undefined,'history-copy'); content.append(el('span',c.title || 'Новый диалог','history-title'));
+    const date=new Date(c.updated_at);
+    if (!Number.isNaN(date.getTime())) content.append(el('time',date.toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}),'history-date'));
+    b.append(icon('message'),content);
     if (state.identity===c.id) b.setAttribute('aria-current','page');
-    b.onclick=()=>selectConversation(c.id).catch(displayError); $('history').append(b);
+    b.onclick=()=>selectConversation(c.id).catch(displayError); parent.append(b);
   }
+  for (const [label,rows] of groups) {
+    const section=el('section',undefined,'history-group'); section.append(el('h2',label,'history-group-title'));
+    rows.forEach(c=>item(c,section)); history.append(section);
+  }
+  if (unnamed.length) {
+    const section=el('details',undefined,'unnamed-history'); section.open=!!query || unnamed.some(c=>c.id===state.identity);
+    section.append(el('summary','Без названия · '+unnamed.length)); unnamed.forEach(c=>item(c,section)); history.append(section);
+  }
+  history.scrollTop=scroll;
 }
 async function loadConversations() { const epoch=state.epoch; const data=await (await api('/conversations')).json(); if (epoch!==state.epoch) return; state.conversations=data.conversations; renderHistory(); const current=state.conversations.find(c=>c.id===state.identity); if (current && !state.pending.has(state.identity)) setTitle(current.title); }
 function newChat() {
   if (state.submitting) return;
-  state.view++; state.identity=null; $('messages').replaceChildren(); $('welcome').hidden=false; $('question').value=''; notice(''); setTitle(); renderHistory(); closeSidebar(); resizeInput(); $('question').focus();
+  clearAttachments();
+  saveView(); state.view++; state.identity=null; $('messages').replaceChildren(); $('welcome').hidden=false; $('question').value=''; notice(''); setTitle(); renderHistory(); closeSidebar(); restoreDraft(); saveView(); $('question').focus();
 }
 async function selectConversation(identity) {
   if (state.submitting) return;
-  const epoch=state.epoch, view=++state.view; state.identity=identity; closeSidebar(); renderHistory(); setTitle(state.conversations.find(c=>c.id===identity)?.title); notice('');
+  if (identity!==state.identity) clearAttachments();
+  saveView(); const epoch=state.epoch, view=++state.view; state.identity=identity; restoreDraft(); saveView(); closeSidebar(); renderHistory(); setTitle(state.conversations.find(c=>c.id===identity)?.title); notice('');
   $('welcome').hidden=true; $('messages').replaceChildren(el('p','Загружаем историю…','panel-note')); updateSend();
   try {
     const data=await (await api('/conversations/'+identity)).json(); if (!isCurrent(epoch,view)) return;
     $('messages').replaceChildren();
-    for (const turn of data.turns) { userMessage(turn.question); const cached=state.cache.get(identity+'\n'+turn.question+'\n'+turn.answer); assistantMessage(cached || {answer:turn.answer,sources:turn.sources}); }
+    for (const turn of data.turns) { userMessage(turn.question,turn.context?.attachments); const cached=state.cache.get(identity+'\n'+turn.question+'\n'+turn.answer); assistantMessage(cached || {answer:turn.answer,sources:turn.sources}); }
     if (!data.turns.length && !state.pending.has(identity)) $('messages').append(el('p','Диалог пока пуст. Задайте первый вопрос.','panel-note'));
     appendPending(); scrollBottom();
-  } catch (error) { if (isCurrent(epoch,view)) { $('messages').replaceChildren(el('p',error.message,'failed-message')); displayError(error); } }
+  } catch (error) { if (isCurrent(epoch,view)) { if (error.status===404) { delete state.drafts[identity]; state.identity=null; saveView(); newChat(); return; } $('messages').replaceChildren(el('p',error.message,'failed-message')); displayError(error); } }
 }
-function userMessage(text) { const box=el('article',undefined,'message user'); box.setAttribute('aria-label','Вы'); box.append(el('div',text,'user-bubble')); $('messages').append(box); }
+function userMessage(text,files=[]) { const box=el('article',undefined,'message user'); box.setAttribute('aria-label','Вы'); const bubble=el('div',undefined,'user-bubble'); for (const file of files || []) { const label=el('div',undefined,'message-attachment'); label.append(icon('file'),el('span',file.filename)); bubble.append(label); } bubble.append(el('div',text)); box.append(bubble); $('messages').append(box); }
 function heading() { const h=el('div',undefined,'assistant-heading'); h.append(el('span','a','brand-symbol'),el('span','AgentAI')); return h; }
 function button(text, fn, cls='') { const b=el('button',text,cls); b.type='button'; b.onclick=()=>Promise.resolve().then(fn).catch(displayError); return b; }
 async function copy(text, b) {
@@ -130,20 +174,22 @@ function failedMessage(text, question) {
   $('messages').append(box); announce(text);
 }
 async function sendQuestion(event) {
-  event?.preventDefault(); const question=$('question').value.trim(); if (!question || state.submitting || state.pending.has(state.identity)) return;
-  if (!state.token) { openConnection(); return; }
+  event?.preventDefault(); const question=$('question').value.trim() || (attachments.length?'Кратко опиши содержимое прикреплённых файлов.':''); if (!question || state.submitting || state.pending.has(state.identity)) return;
+  if (!state.connected) { openConnection(); return; }
   const epoch=state.epoch; state.submitting=true; updateSend(); notice('');
   try {
+    const files=await Promise.all(attachments.map(encodeFile));
+    if (epoch!==state.epoch) return;
     if (!state.identity) { const conversation=await json('/conversations',{}); state.identity=conversation.id; state.view++; }
-    const identity=state.identity; const job=await json('/jobs/chat',{question,conversation_id:identity});
+    const identity=state.identity; const job=await json('/jobs/chat',{question,conversation_id:identity,attachments:files});
     if (epoch!==state.epoch) return;
     state.pending.set(identity,{...job,conversation_id:identity,question});
-    $('welcome').hidden=true; $('messages').querySelector('.panel-note')?.remove(); userMessage(question); appendPending(); $('question').value=''; resizeInput(); scrollBottom(); setTitle(question.slice(0,80));
+    $('welcome').hidden=true; $('messages').querySelector('.panel-note')?.remove(); userMessage(question,files); clearAttachments(); appendPending(); $('question').value=''; delete state.drafts.new; resizeInput(); saveView(); scrollBottom(); setTitle(question.slice(0,80));
     await loadConversations(); schedulePoll(400); announce('Вопрос отправлен.');
   } catch (error) { displayError(error); }
   finally { if (epoch===state.epoch) { state.submitting=false; updateSend(); } }
 }
-function schedulePoll(delay=1600) { clearTimeout(state.timer); if (state.token && state.pending.size) state.timer=setTimeout(()=>pollJobs().catch(error=>{ displayError(error); schedulePoll(5000); }),delay); }
+function schedulePoll(delay=1600) { clearTimeout(state.timer); if (state.connected && state.pending.size) state.timer=setTimeout(()=>pollJobs().catch(error=>{ displayError(error); schedulePoll(5000); }),delay); }
 async function pollJobs() {
   const epoch=state.epoch;
   for (const [identity,tracked] of [...state.pending]) {
@@ -164,20 +210,42 @@ async function pollJobs() {
   }
   updateSend(); schedulePoll();
 }
+async function sessionRequest(method='GET',token) {
+  const response=await fetch('/auth/session',{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},...(token?{body:JSON.stringify({token})}:{})});
+  if (!response.ok) { const error=Error(response.status===401?'Подключитесь с личным ключом.':'Не удалось восстановить подключение. Проверьте сервер и повторите.'); error.status=response.status; throw error; }
+  return response.status===204?null:response.json();
+}
+async function activateSession(data) {
+  state.connected=true; state.scope=data.scope; const epoch=state.epoch;
+  const saved=readView(state.scope,viewStorage); state.drafts=saved.drafts; $('question').value=state.drafts.new || '';
+  $('account-name').textContent=data.user.name; $('account-detail').textContent='Вход сохранён на устройстве';
+  $('disconnect').hidden=false; connectedStatus('Подключено','connected');
+  await loadConversations(); if (epoch!==state.epoch) return;
+  const jobs=await (await api('/jobs')).json();
+  if (epoch!==state.epoch) return;
+  for (const job of jobs.jobs) if (job.kind==='chat' && job.conversation_id && ['queued','running'].includes(job.state)) state.pending.set(job.conversation_id,job);
+  if (saved.identity && state.conversations.some(c=>c.id===saved.identity)) await selectConversation(saved.identity);
+  else { restoreDraft(); saveView(); }
+  $('history').scrollTop=saved.scroll; schedulePoll(); $('connection-dialog').close();
+  try { await api('/ready'); if (epoch===state.epoch) connectedStatus('Готов к работе','connected'); }
+  catch (error) { if (epoch===state.epoch && error.name!=='AbortError') { connectedStatus('Сервисы недоступны','warning'); notice('Подключение сохранено, но модель или поиск недоступны. Проверьте сервисы.'); } }
+}
 async function connect(event) {
   event.preventDefault(); const token=$('access-key').value.trim(); if (!token) return;
-  const draft=$('question').value; disconnect(); $('question').value=draft; resizeInput(); state.token=token; const epoch=state.epoch; $('connect-button').disabled=true; $('connect-button').textContent='Подключаемся…'; $('connection-error').hidden=true;
+  const draft=state.connected?'':$('question').value; disconnect(); $('connect-button').disabled=true; $('connect-button').textContent='Подключаемся…';
   try {
-    const user=await (await api('/session')).json();
-    if (epoch!==state.epoch) return;
-    $('access-key').value=''; $('account-name').textContent=user.name; $('account-detail').textContent='Подключено к AgentAI'; $('disconnect').hidden=false; connectedStatus('Подключено','connected');
-    await loadConversations(); const jobs=await (await api('/jobs')).json();
-    for (const job of jobs.jobs) if (job.kind==='chat' && job.conversation_id && ['queued','running'].includes(job.state)) state.pending.set(job.conversation_id,job);
-    schedulePoll(); $('connection-dialog').close(); closeSidebar(); $('question').focus();
-    try { await api('/ready'); connectedStatus('Готов к работе','connected'); }
-    catch (error) { if (error.name!=='AbortError') { connectedStatus('Сервисы недоступны','warning'); notice('Подключение установлено, но модель или поиск недоступны. Проверьте LM Studio и сервисы.'); } }
-  } catch (error) { if (epoch===state.epoch) { state.token=''; state.conversations=[]; renderHistory(); connectedStatus('Не подключено'); $('connection-error').textContent=error.message; $('connection-error').hidden=false; } }
+    await sessionRequest('DELETE'); const data=await sessionRequest('POST',token);
+    $('access-key').value=''; await activateSession(data);
+    if (draft && !$('question').value) { $('question').value=draft; resizeInput(); saveView(); }
+    closeSidebar(); $('question').focus();
+  } catch(error) { disconnect(); openConnection(); $('connection-error').textContent=error.message; $('connection-error').hidden=false; }
   finally { $('connect-button').disabled=false; $('connect-button').textContent='Подключиться'; updateSend(); }
+}
+async function restoreSession() {
+  const epoch=state.epoch;
+  connectedStatus('Восстанавливаем…');
+  try { const data=await sessionRequest(); if (epoch===state.epoch) await activateSession(data); }
+  catch (error) { if (epoch===state.epoch) { disconnect(); if (error.status!==401) notice(error.message); } }
 }
 function openPanel(title) { previousFocus=document.activeElement; state.panel++; $('panel-title').textContent=title; $('panel-body').replaceChildren(); $('detail-panel').hidden=false; $('close-panel').focus(); return state.panel; }
 function closePanel() { state.panel++; $('detail-panel').hidden=true; $('panel-body').replaceChildren(); if (previousFocus?.isConnected) { if (previousFocus.closest('[inert]')) $('mobile-menu').focus(); else previousFocus.focus(); } }
@@ -190,7 +258,7 @@ async function downloadSource(row) {
 }
 async function openSource(row) {
   const panel=openPanel('Источник'); const epoch=state.epoch; const body=$('panel-body');
-  body.append(el('h3',sourceName(row)),el('p',[row.source,sourcePage(row)].filter(Boolean).join(' · '),'source-location'));
+  body.append(el('h3',sourceName(row)),el('p',[row.citation?.startsWith('attachment:')?'Вложение к сообщению':row.source,sourcePage(row)].filter(Boolean).join(' · '),'source-location'));
   if (row.citation?.startsWith('document:')) body.append(button('Скачать оригинал',()=>downloadSource(row),'secondary-button'));
   const excerpt=el('div',row.text || 'Загружаем фрагмент…','source-excerpt'); body.append(excerpt);
   if (row.validity==='obsolete') body.append(el('p','Документ отмечен как устаревший.','answer-warning'));
@@ -200,7 +268,7 @@ async function openSource(row) {
   catch (error) { if (panel===state.panel && epoch===state.epoch) excerpt.textContent=error.message; }
 }
 async function openDocuments() {
-  if (!state.token) { openConnection(); return; }
+  if (!state.connected) { openConnection(); return; }
   closeSidebar(true);
   const panel=openPanel('Документы'); const body=$('panel-body'); body.append(el('p','Загружаем документы…','panel-note'));
   try {
@@ -220,12 +288,22 @@ $('connection-form').addEventListener('submit',connect);
 $('open-connection').onclick=openConnection;
 $('close-connection').onclick=()=>{ $('access-key').value=''; $('connection-dialog').close(); };
 $('connection-dialog').addEventListener('close',()=>{ $('access-key').value=''; });
-$('disconnect').onclick=()=>{ disconnect(); $('connection-dialog').close(); };
+$('disconnect').onclick=async()=>{ try { await sessionRequest('DELETE'); viewStorage.removeItem('agentai.view.'+state.scope); disconnect(); $('connection-dialog').close(); } catch(error) { $('connection-error').textContent=error.message; $('connection-error').hidden=false; } };
 $('new-chat').onclick=newChat;
 $('history-search').oninput=renderHistory;
-$('question').oninput=resizeInput;
+$('question').oninput=()=>{ resizeInput(); saveView(); };
 $('question').onkeydown=event=>{ if (event.key==='Enter' && !event.shiftKey && !event.isComposing && matchMedia('(pointer:fine)').matches) { event.preventDefault(); $('chat-form').requestSubmit(); } };
 $('chat-form').addEventListener('submit',sendQuestion);
+$('attach-file').onclick=()=>{ if (!state.connected) { openConnection(); return; } $('attachment-input').click(); };
+$('attachment-input').onchange=()=>{
+  const added=[...$('attachment-input').files]; $('attachment-input').value='';
+  const next=[...attachments,...added];
+  const allowed=/\.(pdf|docx|txt|md|py|sql|js|ts|tsx|jsx|json|yaml|yml|xml|html|css|cs|java|php|go|rs|sh|toml|png|jpg|jpeg|webp|tif|tiff)$/i;
+  if (next.length>3) { notice('Можно прикрепить до 3 файлов к сообщению.'); return; }
+  if (next.some(f=>!allowed.test(f.name))) { notice('Этот формат файла не поддерживается. Выберите документ, изображение или текстовый файл с кодом.'); return; }
+  if (next.reduce((sum,f)=>sum+f.size,0)>15_000_000) { notice('Общий размер вложений — не более 15 МБ.'); return; }
+  attachments=next; renderAttachments(); notice(''); $('question').focus();
+};
 document.querySelectorAll('[data-prompt]').forEach(b=>{ b.onclick=()=>{ $('question').value=b.dataset.prompt; resizeInput(); $('question').focus(); }; });
 $('mobile-menu').onclick=()=>{ document.querySelector('.app').classList.add('sidebar-open'); syncSidebar(); $('new-chat').focus(); };
 $('sidebar-backdrop').onclick=()=>closeSidebar(true);
@@ -237,3 +315,7 @@ $('delete-dialog').addEventListener('close',async()=>{ if ($('delete-dialog').re
 document.addEventListener('keydown',event=>{ if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='k') { event.preventDefault(); newChat(); } if (event.key==='Escape') { closeSidebar(true); if (!$('detail-panel').hidden) closePanel(); } });
 syncSidebar();
 resizeInput();
+
+window.addEventListener('pagehide',saveView);
+$('history').addEventListener('scroll',saveView,{passive:true});
+restoreSession();

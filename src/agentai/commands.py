@@ -1,10 +1,22 @@
 """Validated input contracts shared by HTTP and job execution."""
 import uuid
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+class Attachment(BaseModel):
+    filename: str = Field(min_length=1, max_length=200)
+    content_base64: str = Field(max_length=21_000_000)
+
 
 class Chat(BaseModel):
     question: str = Field(min_length=1,max_length=12000)
     conversation_id: uuid.UUID | None = None
+    attachments: list[Attachment] = Field(default_factory=list, max_length=3)
+
+    @model_validator(mode='after')
+    def attachment_size(self):
+        if sum(len(item.content_base64) for item in self.attachments) > 20_000_000:
+            raise ValueError('Общий размер вложений — не более 15 МБ.')
+        return self
 
 
 class Upload(BaseModel):

@@ -1,28 +1,40 @@
 from langchain_core.messages import AIMessage
 
 from agentai.answering.engine import answer
-from agentai.answering.extractive import definition_answer
 
 
 USER={'roles':['reader'],'sources':['docs']}
 
 
-def test_structured_definition_returns_exact_name_without_invented_registry_meaning():
+def test_structured_definition_is_explained_by_model_instead_of_quoted_by_template():
     class Store:
         def search(self,*args):return [dict(id='definition',source='docs',citation='description.pdf#L1',text=(
             'АБ «ВГ»\nОбщее описание\nТаблица 1 | Наименование: Информационная система учёта | Код: 3.009 | Идентификатор: UUID'))]
     class Model:
+        def __init__(self):self.calls=0
         def bind_tools(self,tools):return self
-        def invoke(self,*args):raise AssertionError('A source definition needs no generation')
-    result=answer('Что такое абвг?',USER,Store(),Model())
-    assert 'Информационная система учёта' in result['answer']
+        def invoke(self,messages):
+            self.calls+=1
+            return AIMessage(content='АБВГ — информационная система учёта. Она помогает вести учёт данных. [S1]')
+    model=Model()
+    result=answer('Что такое абвг?',USER,Store(),model)
+    assert model.calls==1
+    assert result['answer'].startswith('АБВГ — информационная система учёта.')
+    assert 'В источнике указано:' not in result['answer']
     assert '3.009' not in result['answer'] and 'UUID' not in result['answer']
     assert result['validation']['passed']
 
 
-def test_incidental_mention_in_an_unrelated_table_is_not_a_definition():
-    rows=[dict(ref='S1',text='Типы полей отчёта\nПодпись в АБВГ\nНаименование: Дата начала | Тип: date')]
-    assert not definition_answer('Что такое абвг?',rows)
+def test_incidental_mention_in_table_does_not_replace_model_answer():
+    class Store:
+        def search(self,*args):return [dict(id='table',source='docs',citation='fields.pdf#L1',
+            text='Типы полей отчёта\nПодпись в АБВГ\nНаименование: Дата начала | Тип: date')]
+    class Model:
+        def bind_tools(self,tools):return self
+        def invoke(self,messages):return AIMessage(content='Значение сокращения зависит от контекста.')
+    result=answer('Что такое абвг?',USER,Store(),Model())
+    assert result['answer'].startswith('Значение сокращения зависит от контекста.')
+    assert 'В источнике указано:' not in result['answer']
 
 
 def test_known_field_requires_a_source_that_contains_the_field():

@@ -4,13 +4,13 @@ const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.
 export function sourceName(row) {
   if (row.filename) return row.filename;
   const citation=row.citation || '';
-  const document=citation.match(/^document:[^/]+\/(.*?)(?:@[\da-f-]{36})?(?:\?|#|$)/i);
+  const document=citation.match(/^(?:document|attachment):[^/]+\/(.*?)(?:@[\da-f-]{36})?(?:\?|#|$)/i);
   return document?.[1] || citation.split('#')[0] || 'Источник';
 }
 export function sourcePage(row) { const page=row.citation?.match(/[?&]page=(\d+)/)?.[1]; return page?'стр. '+page:row.citation?.match(/#L(\d+)(?:-L(\d+))?/)?.[0].replace('#','') || ''; }
 export function renderMarkdown(container, text, sources, actions) {
   const inline=(parent,text)=>{
-    const tokens=/(`[^`\n]+`|\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^\s)]+\)|document:[^\s<>"'`\]\)]+|\[S\d+\])/g;
+    const tokens=/(`[^`\n]+`|\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^\s)]+\)|(?:document|attachment):[^\s<>"'`\]\)]+|\[S\d+\])/g;
     let cursor=0;
     for (const match of text.matchAll(tokens)) {
       parent.append(document.createTextNode(text.slice(cursor,match.index))); const token=match[0];

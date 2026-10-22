@@ -1,511 +1,511 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T08:12:50.619Z",
+  "generatedAt": "2026-10-22T19:57:56.773Z",
   "title": "Design System: AgentAI Chat",
   "extensions": {
     "colorMeta": {
       "accent": {
         "role": "primary",
-        "displayName": "Лесной зелёный",
+        "displayName": "Чёрный акцент",
         "tonalRamp": [
-          "oklch(15% 0.0804 169.40)",
-          "oklch(26% 0.0804 169.40)",
-          "oklch(38% 0.0804 169.40)",
-          "oklch(49% 0.0804 169.40)",
-          "oklch(61% 0.0804 169.40)",
-          "oklch(72% 0.0804 169.40)",
-          "oklch(84% 0.0804 169.40)",
-          "oklch(95% 0.0804 169.40)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "accent-hover": {
         "role": "primary",
-        "displayName": "Глубокий зелёный",
+        "displayName": "Тёмно-серый акцент",
         "tonalRamp": [
-          "oklch(15% 0.0705 165.70)",
-          "oklch(26% 0.0705 165.70)",
-          "oklch(38% 0.0705 165.70)",
-          "oklch(49% 0.0705 165.70)",
-          "oklch(61% 0.0705 165.70)",
-          "oklch(72% 0.0705 165.70)",
-          "oklch(84% 0.0705 165.70)",
-          "oklch(95% 0.0705 165.70)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Тёмные чернила",
         "tonalRamp": [
-          "oklch(15% 0.0156 182.83)",
-          "oklch(26% 0.0156 182.83)",
-          "oklch(38% 0.0156 182.83)",
-          "oklch(49% 0.0156 182.83)",
-          "oklch(61% 0.0156 182.83)",
-          "oklch(72% 0.0156 182.83)",
-          "oklch(84% 0.0156 182.83)",
-          "oklch(95% 0.0156 182.83)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "muted": {
         "role": "neutral",
-        "displayName": "Приглушённая зелень",
+        "displayName": "Серый текст",
         "tonalRamp": [
-          "oklch(15% 0.0203 169.49)",
-          "oklch(26% 0.0203 169.49)",
-          "oklch(38% 0.0203 169.49)",
-          "oklch(49% 0.0203 169.49)",
-          "oklch(61% 0.0203 169.49)",
-          "oklch(72% 0.0203 169.49)",
-          "oklch(84% 0.0203 169.49)",
-          "oklch(95% 0.0203 169.49)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "canvas": {
         "role": "neutral",
         "displayName": "Светлая поверхность чтения",
         "tonalRamp": [
-          "oklch(15% 0.0017 145.56)",
-          "oklch(26% 0.0017 145.56)",
-          "oklch(38% 0.0017 145.56)",
-          "oklch(49% 0.0017 145.56)",
-          "oklch(61% 0.0017 145.56)",
-          "oklch(72% 0.0017 145.56)",
-          "oklch(84% 0.0017 145.56)",
-          "oklch(95% 0.0017 145.56)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "shell": {
         "role": "neutral",
-        "displayName": "Светлая зелёная оболочка",
+        "displayName": "Светло-серая оболочка",
         "tonalRamp": [
-          "oklch(15% 0.0083 157.09)",
-          "oklch(26% 0.0083 157.09)",
-          "oklch(38% 0.0083 157.09)",
-          "oklch(49% 0.0083 157.09)",
-          "oklch(61% 0.0083 157.09)",
-          "oklch(72% 0.0083 157.09)",
-          "oklch(84% 0.0083 157.09)",
-          "oklch(95% 0.0083 157.09)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "soft": {
         "role": "neutral",
         "displayName": "Мягкий фон фрагмента",
         "tonalRamp": [
-          "oklch(15% 0.0051 145.54)",
-          "oklch(26% 0.0051 145.54)",
-          "oklch(38% 0.0051 145.54)",
-          "oklch(49% 0.0051 145.54)",
-          "oklch(61% 0.0051 145.54)",
-          "oklch(72% 0.0051 145.54)",
-          "oklch(84% 0.0051 145.54)",
-          "oklch(95% 0.0051 145.54)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "line": {
         "role": "neutral",
         "displayName": "Светлый разделитель",
         "tonalRamp": [
-          "oklch(15% 0.0109 158.83)",
-          "oklch(26% 0.0109 158.83)",
-          "oklch(38% 0.0109 158.83)",
-          "oklch(49% 0.0109 158.83)",
-          "oklch(61% 0.0109 158.83)",
-          "oklch(72% 0.0109 158.83)",
-          "oklch(84% 0.0109 158.83)",
-          "oklch(95% 0.0109 158.83)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "danger": {
         "role": "error",
         "displayName": "Ошибка",
         "tonalRamp": [
-          "oklch(15% 0.1566 20.94)",
-          "oklch(26% 0.1566 20.94)",
-          "oklch(38% 0.1566 20.94)",
-          "oklch(49% 0.1566 20.94)",
-          "oklch(61% 0.1566 20.94)",
-          "oklch(72% 0.1566 20.94)",
-          "oklch(84% 0.1566 20.94)",
-          "oklch(95% 0.1566 20.94)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "surface": {
         "role": "neutral",
         "displayName": "Поверхность ввода и панелей",
         "tonalRamp": [
-          "oklch(15% 0.0000 89.88)",
-          "oklch(26% 0.0000 89.88)",
-          "oklch(38% 0.0000 89.88)",
-          "oklch(49% 0.0000 89.88)",
-          "oklch(61% 0.0000 89.88)",
-          "oklch(72% 0.0000 89.88)",
-          "oklch(84% 0.0000 89.88)",
-          "oklch(95% 0.0000 89.88)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "label": {
         "role": "neutral",
         "displayName": "Подпись",
         "tonalRamp": [
-          "oklch(15% 0.0316 159.94)",
-          "oklch(26% 0.0316 159.94)",
-          "oklch(38% 0.0316 159.94)",
-          "oklch(49% 0.0316 159.94)",
-          "oklch(61% 0.0316 159.94)",
-          "oklch(72% 0.0316 159.94)",
-          "oklch(84% 0.0316 159.94)",
-          "oklch(95% 0.0316 159.94)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "code-bg": {
         "role": "neutral",
         "displayName": "Фон блока кода",
         "tonalRamp": [
-          "oklch(15% 0.0058 153.77)",
-          "oklch(26% 0.0058 153.77)",
-          "oklch(38% 0.0058 153.77)",
-          "oklch(49% 0.0058 153.77)",
-          "oklch(61% 0.0058 153.77)",
-          "oklch(72% 0.0058 153.77)",
-          "oklch(84% 0.0058 153.77)",
-          "oklch(95% 0.0058 153.77)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "syntax-keyword": {
         "role": "neutral",
         "displayName": "Ключевое слово",
         "tonalRamp": [
-          "oklch(15% 0.1312 308.14)",
-          "oklch(26% 0.1312 308.14)",
-          "oklch(38% 0.1312 308.14)",
-          "oklch(49% 0.1312 308.14)",
-          "oklch(61% 0.1312 308.14)",
-          "oklch(72% 0.1312 308.14)",
-          "oklch(84% 0.1312 308.14)",
-          "oklch(95% 0.1312 308.14)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "syntax-string": {
         "role": "neutral",
         "displayName": "Строка",
         "tonalRamp": [
-          "oklch(15% 0.0898 161.78)",
-          "oklch(26% 0.0898 161.78)",
-          "oklch(38% 0.0898 161.78)",
-          "oklch(49% 0.0898 161.78)",
-          "oklch(61% 0.0898 161.78)",
-          "oklch(72% 0.0898 161.78)",
-          "oklch(84% 0.0898 161.78)",
-          "oklch(95% 0.0898 161.78)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "syntax-number": {
         "role": "neutral",
         "displayName": "Число",
         "tonalRamp": [
-          "oklch(15% 0.1246 44.25)",
-          "oklch(26% 0.1246 44.25)",
-          "oklch(38% 0.1246 44.25)",
-          "oklch(49% 0.1246 44.25)",
-          "oklch(61% 0.1246 44.25)",
-          "oklch(72% 0.1246 44.25)",
-          "oklch(84% 0.1246 44.25)",
-          "oklch(95% 0.1246 44.25)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "syntax-comment": {
         "role": "neutral",
         "displayName": "Комментарий",
         "tonalRamp": [
-          "oklch(15% 0.0289 159.73)",
-          "oklch(26% 0.0289 159.73)",
-          "oklch(38% 0.0289 159.73)",
-          "oklch(49% 0.0289 159.73)",
-          "oklch(61% 0.0289 159.73)",
-          "oklch(72% 0.0289 159.73)",
-          "oklch(84% 0.0289 159.73)",
-          "oklch(95% 0.0289 159.73)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "syntax-title": {
         "role": "neutral",
         "displayName": "Имя и заголовок кода",
         "tonalRamp": [
-          "oklch(15% 0.1043 250.14)",
-          "oklch(26% 0.1043 250.14)",
-          "oklch(38% 0.1043 250.14)",
-          "oklch(49% 0.1043 250.14)",
-          "oklch(61% 0.1043 250.14)",
-          "oklch(72% 0.1043 250.14)",
-          "oklch(84% 0.1043 250.14)",
-          "oklch(95% 0.1043 250.14)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "syntax-attr": {
         "role": "neutral",
         "displayName": "Атрибут и свойство",
         "tonalRamp": [
-          "oklch(15% 0.0841 73.85)",
-          "oklch(26% 0.0841 73.85)",
-          "oklch(38% 0.0841 73.85)",
-          "oklch(49% 0.0841 73.85)",
-          "oklch(61% 0.0841 73.85)",
-          "oklch(72% 0.0841 73.85)",
-          "oklch(84% 0.0841 73.85)",
-          "oklch(95% 0.0841 73.85)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-accent": {
         "role": "primary",
         "displayName": "Мятный акцент",
         "tonalRamp": [
-          "oklch(15% 0.0933 161.64)",
-          "oklch(26% 0.0933 161.64)",
-          "oklch(38% 0.0933 161.64)",
-          "oklch(49% 0.0933 161.64)",
-          "oklch(61% 0.0933 161.64)",
-          "oklch(72% 0.0933 161.64)",
-          "oklch(84% 0.0933 161.64)",
-          "oklch(95% 0.0933 161.64)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-accent-hover": {
         "role": "primary",
-        "displayName": "Светлый мятный акцент",
+        "displayName": "Белый акцент",
         "tonalRamp": [
-          "oklch(15% 0.0748 161.82)",
-          "oklch(26% 0.0748 161.82)",
-          "oklch(38% 0.0748 161.82)",
-          "oklch(49% 0.0748 161.82)",
-          "oklch(61% 0.0748 161.82)",
-          "oklch(72% 0.0748 161.82)",
-          "oklch(84% 0.0748 161.82)",
-          "oklch(95% 0.0748 161.82)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-on-accent": {
         "role": "neutral",
-        "displayName": "Текст на мятном акценте",
+        "displayName": "Текст на белом акценте",
         "tonalRamp": [
-          "oklch(15% 0.0408 159.99)",
-          "oklch(26% 0.0408 159.99)",
-          "oklch(38% 0.0408 159.99)",
-          "oklch(49% 0.0408 159.99)",
-          "oklch(61% 0.0408 159.99)",
-          "oklch(72% 0.0408 159.99)",
-          "oklch(84% 0.0408 159.99)",
-          "oklch(95% 0.0408 159.99)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-ink": {
         "role": "neutral",
         "displayName": "Светлые чернила",
         "tonalRamp": [
-          "oklch(15% 0.0117 153.67)",
-          "oklch(26% 0.0117 153.67)",
-          "oklch(38% 0.0117 153.67)",
-          "oklch(49% 0.0117 153.67)",
-          "oklch(61% 0.0117 153.67)",
-          "oklch(72% 0.0117 153.67)",
-          "oklch(84% 0.0117 153.67)",
-          "oklch(95% 0.0117 153.67)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-muted": {
         "role": "neutral",
         "displayName": "Светлая приглушённая зелень",
         "tonalRamp": [
-          "oklch(15% 0.0277 155.81)",
-          "oklch(26% 0.0277 155.81)",
-          "oklch(38% 0.0277 155.81)",
-          "oklch(49% 0.0277 155.81)",
-          "oklch(61% 0.0277 155.81)",
-          "oklch(72% 0.0277 155.81)",
-          "oklch(84% 0.0277 155.81)",
-          "oklch(95% 0.0277 155.81)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-canvas": {
         "role": "neutral",
         "displayName": "Тёмная поверхность чтения",
         "tonalRamp": [
-          "oklch(15% 0.0119 167.33)",
-          "oklch(26% 0.0119 167.33)",
-          "oklch(38% 0.0119 167.33)",
-          "oklch(49% 0.0119 167.33)",
-          "oklch(61% 0.0119 167.33)",
-          "oklch(72% 0.0119 167.33)",
-          "oklch(84% 0.0119 167.33)",
-          "oklch(95% 0.0119 167.33)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-surface": {
         "role": "neutral",
         "displayName": "Тёмная поверхность ввода и панелей",
         "tonalRamp": [
-          "oklch(15% 0.0190 160.87)",
-          "oklch(26% 0.0190 160.87)",
-          "oklch(38% 0.0190 160.87)",
-          "oklch(49% 0.0190 160.87)",
-          "oklch(61% 0.0190 160.87)",
-          "oklch(72% 0.0190 160.87)",
-          "oklch(84% 0.0190 160.87)",
-          "oklch(95% 0.0190 160.87)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-shell": {
         "role": "neutral",
-        "displayName": "Тёмная зелёная оболочка",
+        "displayName": "Тёмно-серая оболочка",
         "tonalRamp": [
-          "oklch(15% 0.0203 162.76)",
-          "oklch(26% 0.0203 162.76)",
-          "oklch(38% 0.0203 162.76)",
-          "oklch(49% 0.0203 162.76)",
-          "oklch(61% 0.0203 162.76)",
-          "oklch(72% 0.0203 162.76)",
-          "oklch(84% 0.0203 162.76)",
-          "oklch(95% 0.0203 162.76)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-soft": {
         "role": "neutral",
         "displayName": "Тёмный фон фрагмента",
         "tonalRamp": [
-          "oklch(15% 0.0237 159.50)",
-          "oklch(26% 0.0237 159.50)",
-          "oklch(38% 0.0237 159.50)",
-          "oklch(49% 0.0237 159.50)",
-          "oklch(61% 0.0237 159.50)",
-          "oklch(72% 0.0237 159.50)",
-          "oklch(84% 0.0237 159.50)",
-          "oklch(95% 0.0237 159.50)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-line": {
         "role": "neutral",
         "displayName": "Тёмный разделитель",
         "tonalRamp": [
-          "oklch(15% 0.0323 158.15)",
-          "oklch(26% 0.0323 158.15)",
-          "oklch(38% 0.0323 158.15)",
-          "oklch(49% 0.0323 158.15)",
-          "oklch(61% 0.0323 158.15)",
-          "oklch(72% 0.0323 158.15)",
-          "oklch(84% 0.0323 158.15)",
-          "oklch(95% 0.0323 158.15)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-danger": {
         "role": "error",
         "displayName": "Ошибка в тёмной теме",
         "tonalRamp": [
-          "oklch(15% 0.0992 15.55)",
-          "oklch(26% 0.0992 15.55)",
-          "oklch(38% 0.0992 15.55)",
-          "oklch(49% 0.0992 15.55)",
-          "oklch(61% 0.0992 15.55)",
-          "oklch(72% 0.0992 15.55)",
-          "oklch(84% 0.0992 15.55)",
-          "oklch(95% 0.0992 15.55)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-code-bg": {
         "role": "neutral",
         "displayName": "Тёмный фон блока кода",
         "tonalRamp": [
-          "oklch(15% 0.0194 160.64)",
-          "oklch(26% 0.0194 160.64)",
-          "oklch(38% 0.0194 160.64)",
-          "oklch(49% 0.0194 160.64)",
-          "oklch(61% 0.0194 160.64)",
-          "oklch(72% 0.0194 160.64)",
-          "oklch(84% 0.0194 160.64)",
-          "oklch(95% 0.0194 160.64)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-syntax-keyword": {
         "role": "neutral",
         "displayName": "Тёмная тема: ключевое слово",
         "tonalRamp": [
-          "oklch(15% 0.0925 305.41)",
-          "oklch(26% 0.0925 305.41)",
-          "oklch(38% 0.0925 305.41)",
-          "oklch(49% 0.0925 305.41)",
-          "oklch(61% 0.0925 305.41)",
-          "oklch(72% 0.0925 305.41)",
-          "oklch(84% 0.0925 305.41)",
-          "oklch(95% 0.0925 305.41)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-syntax-string": {
         "role": "neutral",
         "displayName": "Тёмная тема: строка",
         "tonalRamp": [
-          "oklch(15% 0.0828 153.52)",
-          "oklch(26% 0.0828 153.52)",
-          "oklch(38% 0.0828 153.52)",
-          "oklch(49% 0.0828 153.52)",
-          "oklch(61% 0.0828 153.52)",
-          "oklch(72% 0.0828 153.52)",
-          "oklch(84% 0.0828 153.52)",
-          "oklch(95% 0.0828 153.52)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-syntax-number": {
         "role": "neutral",
         "displayName": "Тёмная тема: число",
         "tonalRamp": [
-          "oklch(15% 0.0836 60.34)",
-          "oklch(26% 0.0836 60.34)",
-          "oklch(38% 0.0836 60.34)",
-          "oklch(49% 0.0836 60.34)",
-          "oklch(61% 0.0836 60.34)",
-          "oklch(72% 0.0836 60.34)",
-          "oklch(84% 0.0836 60.34)",
-          "oklch(95% 0.0836 60.34)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-syntax-comment": {
         "role": "neutral",
         "displayName": "Тёмная тема: комментарий",
         "tonalRamp": [
-          "oklch(15% 0.0258 151.03)",
-          "oklch(26% 0.0258 151.03)",
-          "oklch(38% 0.0258 151.03)",
-          "oklch(49% 0.0258 151.03)",
-          "oklch(61% 0.0258 151.03)",
-          "oklch(72% 0.0258 151.03)",
-          "oklch(84% 0.0258 151.03)",
-          "oklch(95% 0.0258 151.03)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-syntax-title": {
         "role": "neutral",
         "displayName": "Тёмная тема: имя и заголовок кода",
         "tonalRamp": [
-          "oklch(15% 0.0809 247.74)",
-          "oklch(26% 0.0809 247.74)",
-          "oklch(38% 0.0809 247.74)",
-          "oklch(49% 0.0809 247.74)",
-          "oklch(61% 0.0809 247.74)",
-          "oklch(72% 0.0809 247.74)",
-          "oklch(84% 0.0809 247.74)",
-          "oklch(95% 0.0809 247.74)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       },
       "dark-syntax-attr": {
         "role": "neutral",
         "displayName": "Тёмная тема: атрибут и свойство",
         "tonalRamp": [
-          "oklch(15% 0.0831 88.23)",
-          "oklch(26% 0.0831 88.23)",
-          "oklch(38% 0.0831 88.23)",
-          "oklch(49% 0.0831 88.23)",
-          "oklch(61% 0.0831 88.23)",
-          "oklch(72% 0.0831 88.23)",
-          "oklch(84% 0.0831 88.23)",
-          "oklch(95% 0.0831 88.23)"
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
         ]
       }
     },
@@ -526,12 +526,12 @@
     "shadows": [
       {
         "name": "dialog",
-        "value": "0 20px 70px #172d2030",
+        "value": "0 20px 70px #00000030",
         "purpose": "Диалог над рабочей областью."
       },
       {
         "name": "source-overlay",
-        "value": "-12px 0 45px #20372a1a",
+        "value": "-12px 0 45px #0000001a",
         "purpose": "Панель источника в режиме наложения до 1100px."
       },
       {
@@ -579,7 +579,7 @@
       "refersTo": "button-primary",
       "description": "Подключение и основное подтверждение.",
       "html": "<button class=\"ds-primary\">Подключиться</button>",
-      "css": ".ds-primary{border:0;border-radius:8px;padding:12px 17px;font:600 13px \"Segoe UI\",sans-serif;background:var(--accent,#236c56);color:var(--on-accent,#ffffff);cursor:pointer}.ds-primary:hover{background:var(--accent-hover,#19543f)}.ds-primary:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "css": ".ds-primary{border:0;border-radius:8px;padding:12px 17px;font:600 13px \"Segoe UI\",sans-serif;background:var(--accent,#171717);color:var(--on-accent,#ffffff);cursor:pointer}.ds-primary:hover{background:var(--accent-hover,#404040)}.ds-primary:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     },
     {
       "name": "Вторичная кнопка",
@@ -587,22 +587,22 @@
       "refersTo": "button-secondary",
       "description": "Скачивание и второстепенное действие.",
       "html": "<button class=\"ds-secondary\">Скачать оригинал</button>",
-      "css": ".ds-secondary{border:0;border-radius:8px;padding:12px 17px;font:600 13px \"Segoe UI\",sans-serif;background:var(--shell,#edf3ef);color:var(--ink,#202b29);cursor:pointer}.ds-secondary:hover{background:var(--hover,#e1eae3)}.ds-secondary:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "css": ".ds-secondary{border:0;border-radius:8px;padding:12px 17px;font:600 13px \"Segoe UI\",sans-serif;background:var(--shell,#f5f5f5);color:var(--ink,#171717);cursor:pointer}.ds-secondary:hover{background:var(--hover,#ebebeb)}.ds-secondary:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     },
     {
       "name": "Поле доступа",
       "kind": "input",
       "description": "Однострочный ввод в диалоге подключения.",
       "html": "<label class=\"ds-field\">Ключ доступа<input type=\"password\" placeholder=\"Введите ключ\"></label>",
-      "css": ".ds-field{display:block;color:var(--ink,#202b29);font:600 12px \"Segoe UI\",sans-serif}.ds-field input{display:block;width:100%;margin-top:8px;padding:12px;border:1px solid var(--input-border,#cbdacf);border-radius:8px;background:var(--surface,#ffffff);color:var(--ink,#202b29);font:14px \"Segoe UI\",sans-serif;caret-color:var(--accent,#236c56)}.ds-field input::placeholder{color:var(--placeholder,#596b61)}.ds-field input:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "css": ".ds-field{display:block;color:var(--ink,#171717);font:600 12px \"Segoe UI\",sans-serif}.ds-field input{display:block;width:100%;margin-top:8px;padding:12px;border:1px solid var(--input-border,#8c8c8c);border-radius:8px;background:var(--surface,#ffffff);color:var(--ink,#171717);font:14px \"Segoe UI\",sans-serif;caret-color:var(--accent,#171717)}.ds-field input::placeholder{color:var(--placeholder,#626262)}.ds-field input:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     },
     {
       "name": "Строка истории",
       "kind": "nav",
       "refersTo": "navigation-item",
-      "description": "Активный и обычный диалог в боковой навигации.",
-      "html": "<nav class=\"ds-history\"><button class=\"ds-history-item ds-selected\">Значения flag_order</button><button class=\"ds-history-item\">Каталог отчётов</button></nav>",
-      "css": ".ds-history{background:var(--shell,#edf3ef);padding:8px}.ds-history-item{display:block;width:100%;border:0;border-radius:8px;background:none;text-align:left;padding:12px;color:var(--ink,#202b29);font:13px \"Segoe UI\",sans-serif;cursor:pointer}.ds-history-item:hover{background:var(--hover,#e1eae3)}.ds-history-item.ds-selected{background:var(--active,#dce8df);color:var(--active-ink,#204e39);font-weight:600}.ds-history-item:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "description": "Диалоги сгруппированы по датам; строка содержит название и время обновления. Записи без названия собраны в сворачиваемом разделе. История прокручивается отдельно от нижних кнопок.",
+      "html": "<nav class=\"ds-history\" aria-label=\"Диалоги\"><h3>Сегодня</h3><button class=\"ds-history-item ds-selected\" aria-current=\"page\">Значения flag_order<small>12:45</small></button><details><summary>Без названия</summary><button class=\"ds-history-item\">Новый диалог<small>Вчера</small></button></details></nav>",
+      "css": ".ds-history{width:288px;max-width:100%;min-height:0;overflow:auto;background:var(--shell,#f5f5f5);padding:8px}.ds-history h3,.ds-history summary{font:500 12px \"Segoe UI\",sans-serif;color:var(--muted,#626262);padding:12px}.ds-history-item{display:block;width:100%;min-height:56px;border:0;border-radius:8px;background:none;text-align:left;padding:9px 12px;color:var(--ink,#171717);font:13px/1.45 \"Segoe UI\",sans-serif;cursor:pointer}.ds-history-item small{display:block;margin-top:3px;color:var(--muted,#626262);font-size:12px}.ds-history-item:hover{background:var(--hover,#ebebeb)}.ds-history-item.ds-selected{background:var(--active,#e0e0e0);color:var(--active-ink,#171717);font-weight:600;box-shadow:inset 0 0 0 1px var(--line-strong,#737373)}.ds-history-item:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     },
     {
       "name": "Вкладка источника",
@@ -610,7 +610,7 @@
       "refersTo": "source-chip",
       "description": "Проверяемый документ и номер страницы.",
       "html": "<button class=\"ds-source\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M14 2H5v20h14V7Zm0 0v5h5M8 12h8M8 16h6\"/></svg><span>Параметры отчёта.pdf</span><small>стр. 1</small></button>",
-      "css": ".ds-source{display:inline-flex;align-items:center;gap:7px;background:var(--surface,#ffffff);color:var(--label,#52675b);border:1px solid var(--line,#dce4df);border-radius:7px;padding:7px 10px;font:12px \"Segoe UI\",sans-serif;cursor:pointer}.ds-source svg{width:13px;height:13px}.ds-source small{font-size:12px;color:var(--label,#52675b)}.ds-source:hover{background:var(--hover,#e1eae3);border-color:var(--line-strong,#9bb8a6)}.ds-source:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "css": ".ds-source{display:inline-flex;align-items:center;gap:7px;background:var(--surface,#ffffff);color:var(--label,#525252);border:1px solid var(--line,#e5e5e5);border-radius:7px;padding:7px 10px;font:12px \"Segoe UI\",sans-serif;cursor:pointer}.ds-source svg{width:13px;height:13px}.ds-source small{font-size:12px;color:var(--label,#525252)}.ds-source:hover{background:var(--hover,#ebebeb);border-color:var(--line-strong,#737373)}.ds-source:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     },
     {
       "name": "Поле сообщения",
@@ -618,7 +618,7 @@
       "refersTo": "composer",
       "description": "Вопрос и отправка в одном составном поле.",
       "html": "<form class=\"ds-composer\"><textarea aria-label=\"Сообщение\" placeholder=\"Спросите что-нибудь…\"></textarea><div class=\"ds-compose-bottom\"><span>Поиск по доступным источникам</span><button aria-label=\"Отправить сообщение\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M12 19V5m-6 6 6-6 6 6\"/></svg></button></div></form>",
-      "css": ".ds-composer{padding:15px 17px 11px;background:var(--surface,#ffffff);border:1px solid var(--input-border,#cbdacf);border-radius:14px}.ds-composer:focus-within{border-color:var(--focus-border,#679a7c)}.ds-composer textarea{display:block;resize:none;border:0;width:100%;padding:0 0 8px;background:none;color:var(--ink,#202b29);font:15px/1.65 \"Segoe UI\",sans-serif;outline:none}.ds-composer textarea::placeholder{color:var(--placeholder,#596b61)}.ds-compose-bottom{display:flex;justify-content:space-between;align-items:center;gap:7px;color:var(--label,#52675b);font:12px \"Segoe UI\",sans-serif}.ds-compose-bottom button{border:0;width:33px;height:33px;display:grid;place-items:center;background:var(--accent,#236c56);color:var(--on-accent,#ffffff);border-radius:9px;cursor:pointer}.ds-compose-bottom button:hover{background:var(--accent-hover,#19543f)}.ds-compose-bottom svg{width:19px;height:19px}.ds-compose-bottom button:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "css": ".ds-composer{padding:15px 17px 11px;background:var(--surface,#ffffff);border:1px solid var(--input-border,#8c8c8c);border-radius:14px}.ds-composer:focus-within{border-color:var(--focus-border,#525252)}.ds-composer textarea{display:block;resize:none;border:0;width:100%;padding:0 0 8px;background:none;color:var(--ink,#171717);font:15px/1.65 \"Segoe UI\",sans-serif;outline:none}.ds-composer textarea::placeholder{color:var(--placeholder,#626262)}.ds-compose-bottom{display:flex;justify-content:space-between;align-items:center;gap:7px;color:var(--label,#525252);font:12px \"Segoe UI\",sans-serif}.ds-compose-bottom button{border:0;width:33px;height:33px;display:grid;place-items:center;background:var(--accent,#171717);color:var(--on-accent,#ffffff);border-radius:9px;cursor:pointer}.ds-compose-bottom button:hover{background:var(--accent-hover,#404040)}.ds-compose-bottom svg{width:19px;height:19px}.ds-compose-bottom button:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     },
     {
       "name": "Блок кода с подсветкой",
@@ -626,29 +626,29 @@
       "refersTo": "code-block",
       "description": "Подсветка языка, исходный текст при копировании и собственная прокрутка.",
       "html": "<section class=\"ds-code\"><header><span>sql</span><button>Копировать</button></header><pre><code><span class=\"ds-keyword\">SELECT</span> COUNT(*)\n<span class=\"ds-keyword\">FROM</span> reports\n<span class=\"ds-keyword\">WHERE</span> status = <span class=\"ds-string\">'ready'</span>;</code></pre></section>",
-      "css": ".ds-code{background:var(--code-bg,#f0f4f1);border:1px solid var(--line,#dce4df);border-radius:10px;overflow:hidden;color:var(--ink,#202b29)}.ds-code header{padding:8px 14px;border-bottom:1px solid var(--line,#dce4df);color:var(--label,#52675b);font:12px \"Segoe UI\",sans-serif}.ds-code pre{margin:0;padding:16px;overflow:auto;font:13px/1.7 Consolas,monospace}.ds-code header{display:flex;align-items:center;justify-content:space-between}.ds-code header button{border:0;background:none;color:inherit;padding:4px;font:inherit;cursor:pointer}.ds-code header button:hover{background:var(--hover,#e1eae3)}.ds-code header button:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}.ds-code .ds-keyword{color:var(--syntax-keyword,#704393)}.ds-code .ds-string{color:var(--syntax-string,#176546)}"
+      "css": ".ds-code{background:var(--code-bg,#f5f5f5);border:1px solid var(--line,#e5e5e5);border-radius:10px;overflow:hidden;color:var(--ink,#171717)}.ds-code header{padding:8px 14px;border-bottom:1px solid var(--line,#e5e5e5);color:var(--label,#525252);font:12px \"Segoe UI\",sans-serif}.ds-code pre{margin:0;padding:16px;overflow:auto;font:13px/1.7 Consolas,monospace}.ds-code header{display:flex;align-items:center;justify-content:space-between}.ds-code header button{border:0;background:none;color:inherit;padding:4px;font:inherit;cursor:pointer}.ds-code header button:hover{background:var(--hover,#ebebeb)}.ds-code header button:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}.ds-code .ds-keyword{color:var(--syntax-keyword,#171717)}.ds-code .ds-string{color:var(--syntax-string,#404040)}"
     },
     {
       "name": "Переключатель темы",
       "kind": "button",
       "description": "Включение тёмной темы в шапке; на странице состояние сохраняется.",
       "html": "<button class=\"ds-theme\" aria-label=\"Тёмная тема\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M21 12.8A9 9 0 0 1 11.2 3 9 9 0 1 0 21 12.8Z\"/></svg></button>",
-      "css": ".ds-theme{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:8px;color:var(--muted,#61706a);background:none;cursor:pointer}.ds-theme svg{width:19px;height:19px}.ds-theme:hover{background:var(--hover,#e1eae3);color:var(--ink,#202b29)}.ds-theme:focus-visible{outline:2px solid var(--accent,#236c56);outline-offset:4px}"
+      "css": ".ds-theme{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:8px;color:var(--muted,#626262);background:none;cursor:pointer}.ds-theme svg{width:19px;height:19px}.ds-theme:hover{background:var(--hover,#ebebeb);color:var(--ink,#171717)}.ds-theme:focus-visible{outline:2px solid var(--accent,#171717);outline-offset:4px}"
     }
   ],
   "narrative": {
-    "northStar": "Приёмная садового архива",
-    "overview": "Система относится к пользовательскому сайту web/chat. Техническая консоль web/api-console остаётся самостоятельной поверхностью и не наследует это оформление. Образ садового архива передан зелёной навигацией и спокойной плотностью текста. Светлая тема сочетает почти белую область чтения с лесными акцентами; тёмная сохраняет зелёный оттенок поверхностей и использует светлый мятный акцент. Привычные элементы чата сохраняют узнаваемое поведение.\n\nОсновную работу несут текст, вопрос и проверяемый фрагмент документа. Цвет разделяет оболочку, выбранный диалог и действие. Источники представлены компактными вкладками с названием файла и страницей; иллюстрации и декоративные растровые материалы не используются.",
+    "northStar": "Нейтральный рабочий чат",
+    "overview": "Система относится к пользовательскому сайту web/chat. Техническая консоль web/api-console остаётся самостоятельной поверхностью и не наследует это оформление. По просьбе пользователя интерфейс полностью чёрно-белый. Светлая тема использует белую область чтения, светло-серую навигацию и чёрные действия; тёмная — графитовые поверхности, светлый текст и белые основные кнопки. Привычные элементы чата сохраняют узнаваемое поведение.\n\nОсновную работу несут текст, вопрос и проверяемый фрагмент документа. Светлота, границы и начертание разделяют оболочку, выбранный диалог и действие. Источники представлены компактными вкладками с названием файла и страницей; иллюстрации и декоративные растровые материалы не используются.",
     "keyCharacteristics": [
-      "Зелёная оболочка и различимые поверхности чтения в обеих темах.",
-      "Цвета кода адаптируются к выбранной теме.",
+      "Только нейтральные оттенки серого, чёрный и белый в обеих темах.",
+      "Код различается оттенками серого, насыщенностью шрифта и курсивом комментариев.",
       "Текст интерфейса и ответов важнее декоративных элементов.",
       "Источники открываются в отдельной боковой панели."
     ],
     "rules": [
       {
         "name": "The Tonal Shell Rule",
-        "body": "Оболочка навигации отделяется оттенком фона; зелёный акцент обозначает действие и выбранный источник в обеих темах.",
+        "body": "Оболочка навигации отделяется оттенком фона; контрастный чёрный или белый акцент обозначает действие и выбранный источник в обеих темах.",
         "section": "colors"
       },
       {
@@ -668,7 +668,7 @@
       }
     ],
     "dos": [
-      "Do сохранять различие между зелёной навигацией и областью чтения в обеих темах.",
+      "Do сохранять различие между навигацией и областью чтения в обеих темах.",
       "Do применять семантические цвета выбранной темы ко всем панелям, диалогам и коду.",
       "Do показывать клавиатурный фокус и доступные имена у кнопок с иконками.",
       "Do оставлять SQL и широкие таблицы в собственных прокручиваемых областях.",

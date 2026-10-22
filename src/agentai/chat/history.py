@@ -6,6 +6,7 @@ from ..errors import ApplicationError
 from psycopg.types.json import Jsonb
 
 from ..adapters.postgres import principal
+from .attachments import SOURCE
 
 
 class Conversations:
@@ -34,7 +35,8 @@ class Conversations:
             turns = db.execute('SELECT question,answer,sources,context FROM turns WHERE conversation=%s ORDER BY id DESC LIMIT %s', (identity,40 if display else 12)).fetchall()
         # Drop the whole turn when permissions changed, including the user's question.
         safe = [turn for turn in reversed(turns) if set(turn['context'].get('access_sources', [])) <= set(user['sources'])
-                and all(item['source'] in user['sources'] for item in turn['sources'])]
+                and all(item['source'] in user['sources'] or (item['source'] == SOURCE and
+                    item['id'] in {r['id'] for r in turn['context'].get('attachment_rows', [])}) for item in turn['sources'])]
         if display:
             row['id'] = str(row['id'])
             row['turns'] = safe
@@ -58,6 +60,15 @@ class Conversations:
         self.get(identity, user)
         sources = [{'id': row['id'], 'source': row['source'], 'citation': row['citation']} for row in result.get('sources', [])]
         context = {'access_sources': user['sources'], 'selected': result.get('selected_sources', [])}
+        if result.get('attachment_rows'):
+            context['attachment_rows'] = result['attachment_rows']
+            for source in sources:
+                original = next((r for r in result['attachment_rows'] if r['id'] == source['id']), None)
+                if original:
+                    source['text'] = original['text']
+                    source['filename'] = original['filename']
+        if result.get('attachments'):
+            context['attachments'] = result['attachments']
         with self.database.connect() as db:
             if job_id:
                 job = db.execute('''SELECT state,result FROM jobs
