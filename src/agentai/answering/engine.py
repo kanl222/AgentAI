@@ -18,6 +18,7 @@ from .result import finalize
 from .skill_selection import select_skill
 from .routing import expand_candidates
 from .extractive import evidence_answer
+from .prompt_template import format_rag_prompt
 
 
 class State(TypedDict):
@@ -39,7 +40,54 @@ def skills():
 
 
 @require('reader')
-def answer(question, user, store, model, max_steps=4, history=None):
+def answer_with_template(question, user, store, model, instructions=None, history=None):
+    """Single-turn grounded generation using the formatted RAG prompt template without requiring citations."""
+    history = history or []
+    session = AnswerSession(question, user, store, history)
+    session.retrieve()
+
+    packed_rows = session.packed()
+    passages = []
+    for row in packed_rows:
+        passages.append({
+            'file': row.get('location') or row.get('citation') or row.get('source', 'unknown'),
+            'shard': row.get('shard', '0'),
+            'score': row.get('score', 1.0),
+            'text': row.get('text', ''),
+        })
+
+    prompt = format_rag_prompt(passages, question, instructions=instructions)
+
+    if hasattr(model, 'invoke'):
+        result = model.invoke([HumanMessage(content=prompt)])
+        content = getattr(result, 'content', str(result))
+    elif callable(model):
+        result = model(prompt)
+        content = getattr(result, 'content', str(result))
+    else:
+        raise ValueError(f'Unsupported model: {type(model)}')
+
+    evidence = list(session.evidence.values())
+    return {
+        'question': question,
+        'answer': str(content),
+        'prompt': prompt,
+        'passages': passages,
+        'sources': evidence,
+        'used_sources': [],
+        'warnings': [],
+        'steps': 1,
+        'selected_sources': [row.get('location') or row.get('citation') for row in packed_rows],
+        'finish_reason': 'stop',
+        'validation': {'passed': True, 'issues': []},
+        'retrieval': {'catalog_selection': session.routing_status, 'template_mode': True},
+    }
+
+
+@require('reader')
+def answer(question, user, store, model, max_steps=4, history=None, use_template=False, instructions=None):
+    if use_template:
+        return answer_with_template(question, user, store, model, instructions=instructions, history=history)
     history = history or []
     session = AnswerSession(question, user, store, history)
     loaded_skills = {}

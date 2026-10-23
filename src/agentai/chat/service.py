@@ -20,6 +20,8 @@ def run_chat(body, p, *, services, memory=None, answer, max_steps=4, job_id=None
     options = {'max_steps': max_steps}
     if history:
         options['history'] = history
+    if getattr(body, 'use_template', False):
+        options['use_template'] = True
     rows, attachments = extract_attachments(getattr(body, 'attachments', []))
     # Reuse the previous file only for an explicit follow-up; an unrelated
     # question must keep the ordinary shared-document search behavior.

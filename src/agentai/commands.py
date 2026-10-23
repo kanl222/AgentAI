@@ -11,6 +11,7 @@ class Chat(BaseModel):
     question: str = Field(min_length=1,max_length=12000)
     conversation_id: uuid.UUID | None = None
     attachments: list[Attachment] = Field(default_factory=list, max_length=3)
+    use_template: bool = False
 
     @model_validator(mode='after')
     def attachment_size(self):
